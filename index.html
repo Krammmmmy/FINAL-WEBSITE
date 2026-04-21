@@ -1,36 +1,49 @@
 <!DOCTYPE html>
 <html lang="en">
-
   <head>
     <meta charset="UTF-8">
-    <title>Anime.js Periodic Table Auto Layout animation</title>
-    <link rel='stylesheet' href='https://codepen.io/juliangarnier/pen/PwzmygE.css'><link rel="stylesheet" href="./style.css">
-
+    <title>HoloTable</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='28' fill='none' stroke='%2300f2ff' stroke-width='4' stroke-dasharray='10 6'/%3E%3Ccircle cx='32' cy='32' r='12' fill='%2300f2ff'/%3E%3Cline x1='32' y1='4' x2='32' y2='12' stroke='%23ff00ff' stroke-width='4'/%3E%3Cline x1='32' y1='52' x2='32' y2='60' stroke='%23ff00ff' stroke-width='4'/%3E%3Cline x1='4' y1='32' x2='12' y2='32' stroke='%23ff00ff' stroke-width='4'/%3E%3Cline x1='52' y1='32' x2='60' y2='32' stroke='%23ff00ff' stroke-width='4'/%3E%3C/svg%3E">
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700&family=Roboto+Mono:wght@300;400;700&display=swap" rel="stylesheet">
+    
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="./style.css">
   </head>
     
   <body>
-  <div class="controls">
-  <div class="controls-group display br">
-    <button class="is-active toggle" id="table">table</button>
-    <button class="toggle" id="sphere">sphere</button>
-    <button class="toggle" id="helix">helix</button>
-    <button class="toggle" id="grid">grid</button>
-  </div>
-</div>
-<div id="scene">
-  <div id="scene-content" data-layout="table"></div>
-</div>
+    <video class="input_video" autoplay playsinline></video>
+    
+    <video class="input_video" autoplay playsinline></video>
+    
+    <div id="hand-cursor-1" class="hand-cursor"></div>
+    <div id="hand-cursor-2" class="hand-cursor"></div>
 
-<template id="element">
-  <button class="element" data-color="0">
-    <div class="element-number"></div>
-    <div class="element-symbol"></div>
-    <div class="element-title"></div>
-    <div class="element-description"></div>
-  </button>
-</template>
+    <div class="controls">
+      <div class="controls-group display br">
+        <button class="is-active toggle" id="table">table</button>
+        <button class="toggle" id="sphere">sphere</button>
+        <button class="toggle" id="helix">helix</button>
+        <button class="toggle" id="grid">grid</button>
+      </div>
+    </div>
+    
+    <div id="scene">
+      <div id="scene-content" data-layout="table"></div>
+    </div>
+
+    <template id="element">
+      <button class="element" data-color="0">
+        <div class="element-number"></div>
+        <div class="element-symbol"></div>
+        <div class="element-title"></div>
+        <div class="element-description"></div>
+      </button>
+    </template>
+    
     <script type="module" src="./script.js"></script>
-
   </body>
-  
 </html>
