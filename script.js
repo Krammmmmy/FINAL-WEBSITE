@@ -1,7 +1,6 @@
 import { createLayout, utils, stagger, spring, createTimer, createAnimatable } from 'https://esm.sh/animejs@4.3.0';
 
 // Elements data to populate the table
-
 const ELEMENT_FIELDS = {
   SYMBOL: 0,
   NAME: 1,
@@ -137,8 +136,7 @@ const elements = [
   'Lr', 'Lawrencium', 8, 17, 9, 266, null, 1626.85, null,
 ]
 
-// Genetate the table html
-
+// Generate the table html
 const [ $sceneContent ] = utils.$('#scene-content');
 const [ $template ] = utils.$('#element');
 
@@ -150,18 +148,23 @@ for (let i = 0, l = elements.length / ELEMENT_STRIDE; i < l; i += 1) {
   const $symbol = $element.querySelector('.element-symbol');
   const $title = $element.querySelector('.element-title');
   const $description = $element.querySelector('.element-description');
+  
   $number.textContent = i + 1;
   $symbol.textContent = elements[offset + ELEMENT_FIELDS.SYMBOL];
   $title.textContent = elements[offset + ELEMENT_FIELDS.NAME];
   $element.dataset.color = elements[offset + ELEMENT_FIELDS.COLOR];
   $element.style.gridColumn = elements[offset + ELEMENT_FIELDS.COLUMN];
   $element.style.gridRow = elements[offset + ELEMENT_FIELDS.ROW];
+  
+  // High-tech system readout format
   $description.innerHTML = [
-    `Atomic mass: ${elements[offset + ELEMENT_FIELDS.ATOMIC_MASS]} u`,
-    `Density: ${elements[offset + ELEMENT_FIELDS.DENSITY]} g/cm3`,
-    `Melting: ${elements[offset + ELEMENT_FIELDS.MELTING_POINT]} &deg;C`,
-    `Boiling: ${elements[offset + ELEMENT_FIELDS.BOILING_POINT]} &deg;C`,
+    `<span style="opacity:.5">SYS_MASS:</span> ${elements[offset + ELEMENT_FIELDS.ATOMIC_MASS]} u`,
+    `<span style="opacity:.5">DENSITY :</span> ${elements[offset + ELEMENT_FIELDS.DENSITY]} g/cm³`,
+    `<span style="opacity:.5">T_MELT  :</span> ${elements[offset + ELEMENT_FIELDS.MELTING_POINT]} &deg;C`,
+    `<span style="opacity:.5">T_BOIL  :</span> ${elements[offset + ELEMENT_FIELDS.BOILING_POINT]} &deg;C`,
+    `<br><span style="color:var(--neon-cyan)">> STATUS: STABLE</span>`
   ].join('<br>');
+  
   $sceneContent.appendChild($el);
 }
 
@@ -174,9 +177,9 @@ const elementsLayout = createLayout($sceneContent, {
   ease: 'inOutExpo',
 });
 
-// Move the scene relative to the cursor position
-const sceneAnimatable = createAnimatable('#scene', { rotateX: 200, rotateY: 200 });
-const pointer = { x: 0, y: 0, rotateX: 15, rotateY: 20, rx: 0, ry: 0 };
+// Move the scene relative to the cursor position (Increased rotation for holographic depth)
+const sceneAnimatable = createAnimatable('#scene', { rotateX: 400, rotateY: 400 });
+const pointer = { x: 0, y: 0, rotateX: 25, rotateY: 35, rx: 0, ry: 0 };
 
 createTimer({
   onUpdate: () => {
@@ -187,15 +190,14 @@ createTimer({
   }
 });
 
-// The different layout tranform
+// The different layout transforms
 const transformLayout = {
   table: () => {
-    // The table view use CSS grid and has no special tranforms except for a selected element
     pointer.rotateX = 15;
     pointer.rotateY = 20;
     cards.forEach($el => {
       $el.style.opacity = 1;
-      $el.style.transform = $el.classList.contains('is-expanded') ? 'translateZ(50px)' : 'translateZ(10px)';
+      $el.style.transform = $el.classList.contains('is-expanded') ? 'translateZ(60px)' : 'translateZ(10px)';
     });
   },
   sphere: () => {
@@ -203,7 +205,7 @@ const transformLayout = {
     pointer.rotateX = 40;
     pointer.rotateY = 360;
     cards.forEach(($el, i) => {
-      const offsetZ = $el.classList.contains('is-expanded') ? 20 : 0;
+      const offsetZ = $el.classList.contains('is-expanded') ? 30 : 0;
       const phi = Math.acos(-1 + (2 * i) / cards.length);
       const theta = Math.sqrt(cards.length * Math.PI) * phi;
       const sinPhi = Math.sin(phi);
@@ -223,7 +225,7 @@ const transformLayout = {
     const verticalSpacing = 3;
     const yOffset = (cards.length * verticalSpacing) / 2;
     cards.forEach(($el, i) => {
-      const offsetZ = $el.classList.contains('is-expanded') ? 20 : 0;
+      const offsetZ = $el.classList.contains('is-expanded') ? 30 : 0;
       const theta = i * thetaStep + Math.PI;
       const y = -(i * verticalSpacing) + yOffset;
       const x = radius * Math.sin(theta);
@@ -244,7 +246,7 @@ const transformLayout = {
     const perLayer = cols * rows;
     const layers = Math.ceil(cards.length / perLayer);
     cards.forEach(($el, i) => {
-      const offsetZ = $el.classList.contains('is-expanded') ? 20 : 0;
+      const offsetZ = $el.classList.contains('is-expanded') ? 30 : 0;
       const col = i % cols;
       const row = Math.floor(i / cols) % rows;
       const layer = Math.floor(i / perLayer);
@@ -255,10 +257,9 @@ const transformLayout = {
     });
   },
   random: () => {
-    // The table view use CSS grid and has no special tranforms except for a selected element
     pointer.rotateX = 15;
     pointer.rotateY = 20;
-    utils.set(cards, { x: () => utils.random(-500, 500), y: () => utils.random(-500, 500), z: () => utils.random(-500, 500)})
+    utils.set(cards, { x: () => utils.random(-600, 600), y: () => utils.random(-600, 600), z: () => utils.random(-600, 600)})
   },
 };
 
@@ -310,9 +311,125 @@ document.addEventListener('keydown', event => {
 });
 
 // Intro animation
-
 transformLayout.random();
 utils.set(cards, { opacity: 0 });
 elementsLayout.update(() => transformLayout.table(), {
   delay: stagger([0, 750], { from: 'random' })
 });
+
+// --- DUAL-HAND AR TRACKING LOGIC (AIM & FIRE SETUP) ---
+
+const videoElement = document.querySelector('.input_video');
+const cursor1 = document.querySelector('#hand-cursor-1'); // Primary AIM (Cyan)
+const cursor2 = document.querySelector('#hand-cursor-2'); // Secondary FIRE (Magenta)
+
+// We need to store where the Blue cursor is pointing globally
+let aimCursorX = window.innerWidth / 2;
+let aimCursorY = window.innerHeight / 2;
+
+// Track pinch states explicitly
+const pinchState = {
+  'Left': { isPinching: false, lastClick: 0 },
+  'Right': { isPinching: false, lastClick: 0 }
+};
+
+function processHand(landmarks, handednessLabel) {
+  // Landmark 8 is the Index tip, 4 is the Thumb tip
+  const indexTip = landmarks[8];
+  const thumbTip = landmarks[4];
+
+  // Camera is mirrored, so invert the X axis
+  const xPos = (1 - indexTip.x) * window.innerWidth;
+  const yPos = indexTip.y * window.innerHeight;
+
+  // MediaPipe "Left" label is your physical Right hand (The Aiming Hand)
+  const isPrimary = handednessLabel === 'Left'; 
+
+  // Calculate distance between thumb and index finger for pinching
+  const distance = Math.hypot(indexTip.x - thumbTip.x, indexTip.y - thumbTip.y);
+
+  if (isPrimary) {
+    // === BLUE HAND LOGIC (AIM & ROTATE ONLY) ===
+    cursor1.style.display = 'block';
+    cursor1.style.left = `${xPos}px`;
+    cursor1.style.top = `${yPos}px`;
+    
+    // Update the global aim coordinates for the purple hand to use later
+    aimCursorX = xPos;
+    aimCursorY = yPos;
+
+    // Rotate 3D scene
+    pointer.x = utils.mapRange((1 - indexTip.x), 0, 1, 1, -1);
+    pointer.y = utils.mapRange(indexTip.y, 0, 1, -1, 1);
+    
+    // Note: Blue hand ignores the pinch distance entirely!
+
+  } else {
+    // === PURPLE HAND LOGIC (FIRE/CLICK ONLY) ===
+    cursor2.style.display = 'block';
+    cursor2.style.left = `${xPos}px`;
+    cursor2.style.top = `${yPos}px`;
+
+    if (distance < 0.06) { 
+      if (!pinchState[handednessLabel].isPinching) {
+        pinchState[handednessLabel].isPinching = true;
+        cursor2.classList.add('pinching'); // Make purple ring shrink
+        
+        const now = Date.now();
+        if (now - pinchState[handednessLabel].lastClick > 500) { 
+          
+          // CRITICAL: We click at the BLUE cursor's location, NOT the Purple cursor's location!
+          const elementBelowCursor = document.elementFromPoint(aimCursorX, aimCursorY);
+          
+          if (elementBelowCursor) {
+            elementBelowCursor.click(); 
+            
+            // Briefly flash the blue cursor to confirm the click landed!
+            cursor1.classList.add('pinching');
+            setTimeout(() => cursor1.classList.remove('pinching'), 200);
+          }
+          pinchState[handednessLabel].lastClick = now;
+        }
+      }
+    } else {
+      pinchState[handednessLabel].isPinching = false;
+      cursor2.classList.remove('pinching');
+    }
+  }
+}
+
+function onResults(results) {
+  // Hide both cursors initially
+  cursor1.style.display = 'none';
+  cursor2.style.display = 'none';
+
+  if (results.multiHandLandmarks && results.multiHandedness) {
+    results.multiHandLandmarks.forEach((landmarks, index) => {
+      const handedness = results.multiHandedness[index].label; 
+      processHand(landmarks, handedness);
+    });
+  }
+}
+
+// Initialize Google MediaPipe Hands
+const hands = new Hands({locateFile: (file) => {
+  return `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`;
+}});
+
+hands.setOptions({
+  maxNumHands: 2, 
+  modelComplexity: 1,
+  minDetectionConfidence: 0.7,
+  minTrackingConfidence: 0.7
+});
+hands.onResults(onResults);
+
+// Turn on the webcam
+const camera = new Camera(videoElement, {
+  onFrame: async () => {
+    await hands.send({image: videoElement});
+  },
+  width: 1280,
+  height: 720
+});
+camera.start();
