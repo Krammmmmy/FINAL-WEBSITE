@@ -1,21 +1,16 @@
 import { createLayout, utils, stagger, spring, createTimer, createAnimatable } from 'https://esm.sh/animejs@4.3.0';
 
-// Elements data to populate the table
-const ELEMENT_FIELDS = {
-  SYMBOL: 0,
-  NAME: 1,
-  COLOR: 2,
-  COLUMN: 3,
-  ROW: 4,
-  ATOMIC_MASS: 5,
-  DENSITY: 6,
-  MELTING_POINT: 7,
-  BOILING_POINT: 8,
-};
+// --- HOLOGRAPHIC LOGO ANIMATION ---
+anime({ targets: '.ring-1', rotateX: [0, 360], rotateY: [0, 360], rotateZ: [0, 360], duration: 8000, loop: true, easing: 'linear' });
+anime({ targets: '.ring-2', rotateX: [0, 360], rotateY: [120, 480], rotateZ: [0, 360], duration: 10000, loop: true, easing: 'linear' });
+anime({ targets: '.ring-3', rotateX: [0, 360], rotateY: [240, 600], rotateZ: [0, 360], duration: 12000, loop: true, easing: 'linear' });
+anime({ targets: '.logo-core', scale: [1, 1.5], opacity: [1, 0.7], duration: 1500, direction: 'alternate', loop: true, easing: 'easeInOutSine' });
+
+// --- DATA ---
+const ELEMENT_FIELDS = { SYMBOL: 0, NAME: 1, COLOR: 2, COLUMN: 3, ROW: 4, ATOMIC_MASS: 5, DENSITY: 6, MELTING_POINT: 7, BOILING_POINT: 8 };
 const ELEMENT_STRIDE = 9;
 
 const elements = [
-  // symbol, name, color, column, row, atomicMass, density, meltingPoint, boilingPoint
   'H', 'Hydrogen', 0, 1, 1, 1.008, 0.08988, -259.16, -252.88,
   'He', 'Helium', 1, 18, 1, 4.0026022, 0.1786, -272.2, -268.93,
   'Li', 'Lithium', 2, 1, 2, 6.94, 0.534, 180.5, 1329.85,
@@ -134,9 +129,9 @@ const elements = [
   'Md', 'Mendelevium', 8, 15, 9, 258, null, 826.85, null,
   'No', 'Nobelium', 8, 16, 9, 259, null, 826.85, null,
   'Lr', 'Lawrencium', 8, 17, 9, 266, null, 1626.85, null,
-]
+];
 
-// Generate the table html
+// --- DOM SETUP ---
 const [ $sceneContent ] = utils.$('#scene-content');
 const [ $template ] = utils.$('#element');
 
@@ -156,7 +151,6 @@ for (let i = 0, l = elements.length / ELEMENT_STRIDE; i < l; i += 1) {
   $element.style.gridColumn = elements[offset + ELEMENT_FIELDS.COLUMN];
   $element.style.gridRow = elements[offset + ELEMENT_FIELDS.ROW];
   
-  // High-tech system readout format
   $description.innerHTML = [
     `<span style="opacity:.5">SYS_MASS:</span> ${elements[offset + ELEMENT_FIELDS.ATOMIC_MASS]} u`,
     `<span style="opacity:.5">DENSITY :</span> ${elements[offset + ELEMENT_FIELDS.DENSITY]} g/cm³`,
@@ -169,28 +163,15 @@ for (let i = 0, l = elements.length / ELEMENT_STRIDE; i < l; i += 1) {
 }
 
 const cards = utils.$('#scene-content .element');
+const elementsLayout = createLayout($sceneContent, { properties: ['font-size'], duration: 2000, ease: 'inOutExpo' });
 
-// Create the cards layout and register the font-size as an extra property for animation
-const elementsLayout = createLayout($sceneContent, {
-  properties: ['font-size'],
-  duration: 2000,
-  ease: 'inOutExpo',
-});
+// --- RESPONSIVE CALCULATION ---
+const getResponsiveValue = (baseValue) => {
+  const minDim = Math.min(window.innerWidth, window.innerHeight);
+  return (minDim / 800) * baseValue; 
+};
 
-// Move the scene relative to the cursor position (Increased rotation for holographic depth)
-const sceneAnimatable = createAnimatable('#scene', { rotateX: 400, rotateY: 400 });
-const pointer = { x: 0, y: 0, rotateX: 25, rotateY: 35, rx: 0, ry: 0 };
-
-createTimer({
-  onUpdate: () => {
-    pointer.rx = utils.lerp(pointer.rx, pointer.rotateX, .01);
-    pointer.ry = utils.lerp(pointer.ry, pointer.rotateY, .01);
-    sceneAnimatable.rotateX(pointer.y * pointer.rx);
-    sceneAnimatable.rotateY(pointer.x * pointer.ry);
-  }
-});
-
-// The different layout transforms
+// --- LAYOUTS ---
 const transformLayout = {
   table: () => {
     pointer.rotateX = 15;
@@ -201,9 +182,8 @@ const transformLayout = {
     });
   },
   sphere: () => {
-    const radius = 300;
-    pointer.rotateX = 40;
-    pointer.rotateY = 360;
+    const radius = getResponsiveValue(300); 
+    pointer.rotateX = 40; pointer.rotateY = 360;
     cards.forEach(($el, i) => {
       const offsetZ = $el.classList.contains('is-expanded') ? 30 : 0;
       const phi = Math.acos(-1 + (2 * i) / cards.length);
@@ -218,15 +198,13 @@ const transformLayout = {
     });
   },
   helix: () => {
-    pointer.rotateX = 30;
-    pointer.rotateY = 300;
-    const radius = 400;
-    const thetaStep = 0.16;
-    const verticalSpacing = 3;
+    const radius = getResponsiveValue(350); 
+    pointer.rotateX = 30; pointer.rotateY = 300;
+    const verticalSpacing = getResponsiveValue(4); 
     const yOffset = (cards.length * verticalSpacing) / 2;
     cards.forEach(($el, i) => {
       const offsetZ = $el.classList.contains('is-expanded') ? 30 : 0;
-      const theta = i * thetaStep + Math.PI;
+      const theta = i * 0.16 + Math.PI;
       const y = -(i * verticalSpacing) + yOffset;
       const x = radius * Math.sin(theta);
       const z = radius * Math.cos(theta);
@@ -236,158 +214,167 @@ const transformLayout = {
     });
   },
   grid: () => {
-    pointer.rotateX = 10;
-    pointer.rotateY = 60;
-    const cols = 5;
-    const rows = 5;
-    const colGap = 150;
-    const rowGap = 100;
-    const depthGap = 150;
-    const perLayer = cols * rows;
+    pointer.rotateX = 10; pointer.rotateY = 60;
+    const colGap = getResponsiveValue(150);
+    const rowGap = getResponsiveValue(100);
+    const depthGap = getResponsiveValue(150);
+    const perLayer = 25;
     const layers = Math.ceil(cards.length / perLayer);
     cards.forEach(($el, i) => {
       const offsetZ = $el.classList.contains('is-expanded') ? 30 : 0;
-      const col = i % cols;
-      const row = Math.floor(i / cols) % rows;
+      const col = i % 5;
+      const row = Math.floor(i / 5) % 5;
       const layer = Math.floor(i / perLayer);
-      const x = (col - (cols - 1) / 2) * colGap;
-      const y = ((rows - 1) / 2 - row) * rowGap;
+      const x = (col - 2) * colGap;
+      const y = (2 - row) * rowGap;
       const z = offsetZ + ((layer - (layers - 1) / 2) * depthGap);
       $el.style.transform = `translate3d(${x}px, ${y}px, ${z}px)`;
     });
   },
   random: () => {
-    pointer.rotateX = 15;
-    pointer.rotateY = 20;
-    utils.set(cards, { x: () => utils.random(-600, 600), y: () => utils.random(-600, 600), z: () => utils.random(-600, 600)})
+    pointer.rotateX = 15; pointer.rotateY = 20;
+    const spread = getResponsiveValue(600);
+    utils.set(cards, { x: () => utils.random(-spread, spread), y: () => utils.random(-spread, spread), z: () => utils.random(-spread, spread)})
   },
 };
 
-document.addEventListener('pointermove', event => {
-  const hw = window.innerWidth * .5;
-  const hh = window.innerHeight * .5;
-  pointer.x = utils.mapRange(event.clientX - hw, -hw, hw, 1, -1);
-  pointer.y = utils.mapRange(event.clientY - hh, -hh, hh, -1, 1);
+// Window Resize Auto-Align
+let resizeTimeout;
+window.addEventListener('resize', () => {
+  clearTimeout(resizeTimeout);
+  resizeTimeout = setTimeout(() => { transformLayout[$sceneContent.dataset.layout](); }, 200);
 });
 
-const toggles = utils.$('.controls button.toggle');
+// --- SMOOTH 3D ROTATION ENGINE ---
+const sceneAnimatable = createAnimatable('#scene', { rotateX: 150, rotateY: 150 });
+const pointer = { x: 0, y: 0, targetX: 0, targetY: 0, rotateX: 20, rotateY: 30, rx: 0, ry: 0 };
+
+createTimer({
+  onUpdate: () => {
+    pointer.x = utils.lerp(pointer.x, pointer.targetX, 0.05);
+    pointer.y = utils.lerp(pointer.y, pointer.targetY, 0.05);
+    pointer.rx = utils.lerp(pointer.rx, pointer.rotateX, 0.05);
+    pointer.ry = utils.lerp(pointer.ry, pointer.rotateY, 0.05);
+    sceneAnimatable.rotateX(pointer.y * pointer.rx);
+    sceneAnimatable.rotateY(pointer.x * pointer.ry);
+  }
+});
+
+// --- SAFE CLICK LISTENER (ONLY ONE DECLARATION OF TOGGLES) ---
+const toggles = utils.$('.controls button.toggle'); // Make sure this is the only time 'toggles' is declared!
+let lastClickTime = 0; 
 
 document.addEventListener('click', event => {
+  const now = Date.now();
+  
+  // Top Menu Buttons
   const $toggle = event.target.closest('.controls button.toggle');
   if ($toggle) {
+    if (now - lastClickTime < 1000) return; // 1-second cooldown
+    lastClickTime = now;
+
     toggles.forEach(button => button.classList.remove('is-active'));
     $toggle.classList.add('is-active');
     const layoutType = $toggle.id;
+    
     elementsLayout.update(() => {
       cards.forEach($el => $el.classList.remove('is-expanded'));
       $sceneContent.dataset.layout = layoutType;
       transformLayout[layoutType]();
-    }, {
-      delay: stagger([0, 750], { from: 'random' })
-    });
+    }, { delay: stagger([0, 750], { from: 'random' }) });
     return;
   }
+
+  // Periodic Elements
   const $card = event.target.closest('#scene-content .element');
-  const shouldExpand = $card && !$card.classList.contains('is-expanded');
-  elementsLayout.update(() => {
-    cards.forEach($el => $el.classList.remove('is-expanded'));
-    if (shouldExpand) $card.classList.add('is-expanded');
-    transformLayout[$sceneContent.dataset.layout]();
-  },{
-    ease: spring({ bounce: .2, duration: 350 }),
-  });
+  if ($card) {
+    if (now - lastClickTime < 500) return; // Half-second cooldown
+    lastClickTime = now;
+
+    const shouldExpand = !$card.classList.contains('is-expanded');
+    elementsLayout.update(() => {
+      cards.forEach($el => $el.classList.remove('is-expanded'));
+      if (shouldExpand) $card.classList.add('is-expanded');
+      transformLayout[$sceneContent.dataset.layout]();
+    },{ ease: spring({ bounce: .2, duration: 350 }) });
+  }
 });
 
-document.addEventListener('keydown', event => {
-  if (event.key !== 'Escape') return;
-  const hasExpandedCard = cards.some($el => $el.classList.contains('is-expanded'));
-  if (!hasExpandedCard) return;
-  elementsLayout.update(() => {
-    cards.forEach($el => $el.classList.remove('is-expanded'));
-    transformLayout[$sceneContent.dataset.layout]();
-  },{
-    ease: spring({ bounce: .3, duration: 350 }),
-  });
-});
-
-// Intro animation
+// --- INTRO ANIMATION ---
 transformLayout.random();
 utils.set(cards, { opacity: 0 });
-elementsLayout.update(() => transformLayout.table(), {
-  delay: stagger([0, 750], { from: 'random' })
-});
+elementsLayout.update(() => transformLayout.table(), { delay: stagger([0, 750], { from: 'random' }) });
 
-// --- DUAL-HAND AR TRACKING LOGIC (AIM & FIRE SETUP) ---
 
+// --- AR TRACKING (AIM & FIRE) ---
 const videoElement = document.querySelector('.input_video');
-const cursor1 = document.querySelector('#hand-cursor-1'); // Primary AIM (Cyan)
-const cursor2 = document.querySelector('#hand-cursor-2'); // Secondary FIRE (Magenta)
+const cursor1 = document.querySelector('#hand-cursor-1'); 
+const cursor2 = document.querySelector('#hand-cursor-2'); 
 
-// We need to store where the Blue cursor is pointing globally
 let aimCursorX = window.innerWidth / 2;
 let aimCursorY = window.innerHeight / 2;
 
-// Track pinch states explicitly
+let cursor1Target = { x: -100, y: -100, visible: false };
+let cursor2Target = { x: -100, y: -100, visible: false };
+
 const pinchState = {
   'Left': { isPinching: false, lastClick: 0 },
   'Right': { isPinching: false, lastClick: 0 }
 };
 
+// 60FPS Cursor Rendering Loop
+function renderCursors() {
+  if (cursor1Target.visible) {
+    cursor1.style.display = 'block';
+    cursor1.style.transform = `translate3d(${cursor1Target.x}px, ${cursor1Target.y}px, 0) translate(-50%, -50%)`;
+  } else { cursor1.style.display = 'none'; }
+
+  if (cursor2Target.visible) {
+    cursor2.style.display = 'block';
+    cursor2.style.transform = `translate3d(${cursor2Target.x}px, ${cursor2Target.y}px, 0) translate(-50%, -50%)`;
+  } else { cursor2.style.display = 'none'; }
+
+  requestAnimationFrame(renderCursors);
+}
+requestAnimationFrame(renderCursors);
+
 function processHand(landmarks, handednessLabel) {
-  // Landmark 8 is the Index tip, 4 is the Thumb tip
   const indexTip = landmarks[8];
   const thumbTip = landmarks[4];
-
-  // Camera is mirrored, so invert the X axis
   const xPos = (1 - indexTip.x) * window.innerWidth;
   const yPos = indexTip.y * window.innerHeight;
-
-  // MediaPipe "Left" label is your physical Right hand (The Aiming Hand)
   const isPrimary = handednessLabel === 'Left'; 
-
-  // Calculate distance between thumb and index finger for pinching
   const distance = Math.hypot(indexTip.x - thumbTip.x, indexTip.y - thumbTip.y);
 
   if (isPrimary) {
-    // === BLUE HAND LOGIC (AIM & ROTATE ONLY) ===
-    cursor1.style.display = 'block';
-    cursor1.style.left = `${xPos}px`;
-    cursor1.style.top = `${yPos}px`;
-    
-    // Update the global aim coordinates for the purple hand to use later
+    // BLUE HAND: Aim and Rotate
+    cursor1Target.visible = true;
+    cursor1Target.x = xPos;
+    cursor1Target.y = yPos;
     aimCursorX = xPos;
     aimCursorY = yPos;
-
-    // Rotate 3D scene
-    pointer.x = utils.mapRange((1 - indexTip.x), 0, 1, 1, -1);
-    pointer.y = utils.mapRange(indexTip.y, 0, 1, -1, 1);
-    
-    // Note: Blue hand ignores the pinch distance entirely!
-
+    pointer.targetX = utils.mapRange((1 - indexTip.x), 0, 1, 1, -1);
+    pointer.targetY = utils.mapRange(indexTip.y, 0, 1, -1, 1);
   } else {
-    // === PURPLE HAND LOGIC (FIRE/CLICK ONLY) ===
-    cursor2.style.display = 'block';
-    cursor2.style.left = `${xPos}px`;
-    cursor2.style.top = `${yPos}px`;
+    // PURPLE HAND: Fire / Click at Blue Hand Location
+    cursor2Target.visible = true;
+    cursor2Target.x = xPos;
+    cursor2Target.y = yPos;
 
     if (distance < 0.06) { 
       if (!pinchState[handednessLabel].isPinching) {
         pinchState[handednessLabel].isPinching = true;
-        cursor2.classList.add('pinching'); // Make purple ring shrink
+        cursor2.classList.add('pinching'); 
         
         const now = Date.now();
         if (now - pinchState[handednessLabel].lastClick > 500) { 
+          setTimeout(() => {
+            const elementBelowCursor = document.elementFromPoint(aimCursorX, aimCursorY);
+            if (elementBelowCursor) elementBelowCursor.click(); 
+          }, 0);
           
-          // CRITICAL: We click at the BLUE cursor's location, NOT the Purple cursor's location!
-          const elementBelowCursor = document.elementFromPoint(aimCursorX, aimCursorY);
-          
-          if (elementBelowCursor) {
-            elementBelowCursor.click(); 
-            
-            // Briefly flash the blue cursor to confirm the click landed!
-            cursor1.classList.add('pinching');
-            setTimeout(() => cursor1.classList.remove('pinching'), 200);
-          }
+          cursor1.classList.add('pinching');
+          setTimeout(() => cursor1.classList.remove('pinching'), 200);
           pinchState[handednessLabel].lastClick = now;
         }
       }
@@ -399,10 +386,8 @@ function processHand(landmarks, handednessLabel) {
 }
 
 function onResults(results) {
-  // Hide both cursors initially
-  cursor1.style.display = 'none';
-  cursor2.style.display = 'none';
-
+  cursor1Target.visible = false;
+  cursor2Target.visible = false;
   if (results.multiHandLandmarks && results.multiHandedness) {
     results.multiHandLandmarks.forEach((landmarks, index) => {
       const handedness = results.multiHandedness[index].label; 
@@ -411,25 +396,12 @@ function onResults(results) {
   }
 }
 
-// Initialize Google MediaPipe Hands
-const hands = new Hands({locateFile: (file) => {
-  return `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`;
-}});
-
-hands.setOptions({
-  maxNumHands: 2, 
-  modelComplexity: 1,
-  minDetectionConfidence: 0.7,
-  minTrackingConfidence: 0.7
-});
+const hands = new Hands({locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`});
+hands.setOptions({ maxNumHands: 2, modelComplexity: 1, minDetectionConfidence: 0.7, minTrackingConfidence: 0.7 });
 hands.onResults(onResults);
 
-// Turn on the webcam
 const camera = new Camera(videoElement, {
-  onFrame: async () => {
-    await hands.send({image: videoElement});
-  },
-  width: 1280,
-  height: 720
+  onFrame: async () => { await hands.send({image: videoElement}); },
+  width: 1280, height: 720
 });
 camera.start();
