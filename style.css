@@ -223,8 +223,8 @@ button.element:hover {
 
 /* Expanded Hologram State */
 .element.is-expanded {
-  --w: 16rem;
-  --h: 16rem;
+  --w: 20rem;
+  --h: 22rem;
   background: rgba(4, 13, 26, 0.95);
   border: 2px solid var(--neon-cyan);
   z-index: 100;
@@ -281,7 +281,56 @@ button.element:hover {
   display: block;
 }
 
-/* Controls / Navigation */
+/* ==============================
+   LEARN MORE BUTTON
+   ============================== */
+.learn-more-btn {
+  display: none;
+  align-items: center;
+  gap: 0.4rem;
+  margin-top: auto;
+  padding: 0.35rem 0.9rem 0.35rem 0.75rem;
+  font-family: 'Roboto Mono', monospace;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  text-decoration: none;
+  color: var(--bg-dark);
+  background: var(--neon-cyan);
+  border: none;
+  clip-path: polygon(8% 0%, 100% 0%, 92% 100%, 0% 100%);
+  cursor: pointer;
+  transition: background 0.2s, box-shadow 0.2s, transform 0.15s;
+  white-space: nowrap;
+  position: relative;
+  z-index: 101;
+  pointer-events: auto;
+}
+
+.learn-more-btn:hover {
+  background: #fff;
+  box-shadow: 0 0 20px var(--neon-cyan), 0 0 40px rgba(0,242,255,0.4);
+  transform: scaleX(1.04);
+}
+
+.learn-more-btn .lm-chevron {
+  font-size: 0.75rem;
+  animation: chevron-pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes chevron-pulse {
+  0%, 100% { opacity: 1; transform: translateX(0); }
+  50%       { opacity: 0.5; transform: translateX(3px); }
+}
+
+.element.is-expanded .learn-more-btn {
+  display: flex;
+}
+
+/* ==============================
+   CONTROLS BAR
+   ============================== */
 .controls {
   display: flex;
   justify-content: center;
@@ -333,7 +382,61 @@ button.element:hover {
   text-shadow: 0 0 5px rgba(255, 255, 255, 0.8);
 }
 
-/* Layout Specific Absolute Positioning */
+/* Fix mobile controls overlapping */
+.controls button {
+  padding: clamp(0.3rem, 1vw, 0.5rem) clamp(0.5rem, 2vw, 1.5rem);
+  font-size: clamp(0.6rem, 1.5vw, 0.8rem);
+  margin: 0 0.2rem;
+}
+
+/* ==============================
+   CAMERA TOGGLE BUTTON
+   ============================== */
+.camera-group {
+  gap: 0;
+}
+
+.camera-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.camera-btn.ar-on {
+  background: var(--neon-blue);
+  color: white;
+  box-shadow: 0 0 15px var(--neon-blue);
+  text-shadow: 0 0 5px rgba(255, 255, 255, 0.8);
+}
+
+.cam-status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--neon-blue);
+  opacity: 0.35;
+  flex-shrink: 0;
+  transition: opacity 0.3s, box-shadow 0.3s;
+}
+
+.camera-btn.ar-on .cam-status-dot {
+  opacity: 1;
+  animation: dot-blink 1.2s ease-in-out infinite;
+  box-shadow: 0 0 8px var(--neon-blue);
+}
+
+@keyframes dot-blink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.3; }
+}
+
+.cam-icon svg {
+  display: block;
+}
+
+/* ==============================
+   LAYOUT SPECIFIC POSITIONING
+   ============================== */
 #scene-content[data-layout="sphere"] .element,
 #scene-content[data-layout="helix"] .element,
 #scene-content[data-layout="grid"] .element {

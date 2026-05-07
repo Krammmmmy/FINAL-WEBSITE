@@ -148,13 +148,23 @@ for (let i = 0, l = elements.length / ELEMENT_STRIDE; i < l; i += 1) {
   const $symbol = $element.querySelector('.element-symbol');
   const $title = $element.querySelector('.element-title');
   const $description = $element.querySelector('.element-description');
-  
-  $number.textContent = i + 1;
-  $symbol.textContent = elements[offset + ELEMENT_FIELDS.SYMBOL];
-  $title.textContent = elements[offset + ELEMENT_FIELDS.NAME];
+  const $learnMore = $element.querySelector('.learn-more-btn');
+
+  const name = elements[offset + ELEMENT_FIELDS.NAME];
+  const symbol = elements[offset + ELEMENT_FIELDS.SYMBOL];
+  const atomicNumber = i + 1;
+
+  $number.textContent = atomicNumber;
+  $symbol.textContent = symbol;
+  $title.textContent = name;
   $element.dataset.color = elements[offset + ELEMENT_FIELDS.COLOR];
   $element.style.gridColumn = elements[offset + ELEMENT_FIELDS.COLUMN];
   $element.style.gridRow = elements[offset + ELEMENT_FIELDS.ROW];
+
+  // Store element identity on the card for the wiki link
+  $element.dataset.elementName = name;
+  $element.dataset.elementSymbol = symbol;
+  $element.dataset.atomicNumber = atomicNumber;
   
   // High-tech system readout format
   $description.innerHTML = [
@@ -266,13 +276,14 @@ const transformLayout = {
 document.addEventListener('pointermove', event => {
   const hw = window.innerWidth * .5;
   const hh = window.innerHeight * .5;
-  pointer.x = utils.mapRange(event.clientX - hw, -hw, hw, 1, -1);
-  pointer.y = utils.mapRange(event.clientY - hh, -hh, hh, -1, 1);
+  pointer.x = mapRange(event.clientX - hw, -hw, hw, 1, -1);
+  pointer.y = mapRange(event.clientY - hh, -hh, hh, -1, 1);
 });
 
 const toggles = utils.$('.controls button.toggle');
 
 document.addEventListener('click', event => {
+  // Layout toggle buttons
   const $toggle = event.target.closest('.controls button.toggle');
   if ($toggle) {
     toggles.forEach(button => button.classList.remove('is-active'));
@@ -287,6 +298,8 @@ document.addEventListener('click', event => {
     });
     return;
   }
+
+  // Expand / collapse individual element card
   const $card = event.target.closest('#scene-content .element');
   const shouldExpand = $card && !$card.classList.contains('is-expanded');
   elementsLayout.update(() => {
@@ -317,21 +330,31 @@ elementsLayout.update(() => transformLayout.table(), {
   delay: stagger([0, 750], { from: 'random' })
 });
 
+// Helper function for mapping values between ranges
+function mapRange(value, inMin, inMax, outMin, outMax) {
+  return ((value - inMin) / (inMax - inMin)) * (outMax - outMin) + outMin;
+}
+
 // --- DUAL-HAND AR TRACKING LOGIC (AIM & FIRE SETUP) ---
 
 const videoElement = document.querySelector('.input_video');
-const cursor1 = document.querySelector('#hand-cursor-1'); // Primary AIM (Cyan)
-const cursor2 = document.querySelector('#hand-cursor-2'); // Secondary FIRE (Magenta)
+const cursor1 = document.querySelector('#hand-cursor-1');
+const cursor2 = document.querySelector('#hand-cursor-2');
+const cameraBtn = document.querySelector('#camera-toggle');
+const camLabel = cameraBtn.querySelector('.cam-label');
 
-// We need to store where the Blue cursor is pointing globally
-let aimCursorX = window.innerWidth / 2;
-let aimCursorY = window.innerHeight / 2;
+let arEnabled = false;
+let cameraInstance = null;
+let handsInstance = null;
 
 // Track pinch states explicitly
 const pinchState = {
   'Left': { isPinching: false, lastClick: 0 },
   'Right': { isPinching: false, lastClick: 0 }
 };
+
+let aimCursorX = window.innerWidth / 2;
+let aimCursorY = window.innerHeight / 2;
 
 function processHand(landmarks, handednessLabel) {
   // Landmark 8 is the Index tip, 4 is the Thumb tip
@@ -359,8 +382,8 @@ function processHand(landmarks, handednessLabel) {
     aimCursorY = yPos;
 
     // Rotate 3D scene
-    pointer.x = utils.mapRange((1 - indexTip.x), 0, 1, 1, -1);
-    pointer.y = utils.mapRange(indexTip.y, 0, 1, -1, 1);
+    pointer.x = mapRange((1 - indexTip.x), 0, 1, 1, -1);
+    pointer.y = mapRange(indexTip.y, 0, 1, -1, 1);
     
     // Note: Blue hand ignores the pinch distance entirely!
 
@@ -410,26 +433,57 @@ function onResults(results) {
     });
   }
 }
-
 // Initialize Google MediaPipe Hands
-const hands = new Hands({locateFile: (file) => {
-  return `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`;
-}});
+function startAR() {
+  videoElement.classList.add('ar-active');
+  camLabel.textContent = 'Camera  ON';
+  cameraBtn.classList.add('ar-on');
 
-hands.setOptions({
+  handsInstance = new window.Hands({
+    locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`
+  });
+  handsInstance.setOptions({
   maxNumHands: 2, 
   modelComplexity: 1,
   minDetectionConfidence: 0.7,
   minTrackingConfidence: 0.7
 });
-hands.onResults(onResults);
+  handsInstance.onResults(onResults);
 
-// Turn on the webcam
-const camera = new Camera(videoElement, {
+  cameraInstance = new window.Camera(videoElement, {
   onFrame: async () => {
-    await hands.send({image: videoElement});
+      await handsInstance.send({ image: videoElement });
   },
   width: 1280,
   height: 720
 });
-camera.start();
+  cameraInstance.start();
+}
+
+function stopAR() {
+  videoElement.classList.remove('ar-active');
+  camLabel.textContent = 'Camera OFF';
+  cameraBtn.classList.remove('ar-on');
+  cursor1.style.display = 'none';
+  cursor2.style.display = 'none';
+
+  if (cameraInstance) {
+    cameraInstance.stop();
+    cameraInstance = null;
+  }
+  // Stop webcam stream tracks
+  if (videoElement.srcObject) {
+    videoElement.srcObject.getTracks().forEach(t => t.stop());
+    videoElement.srcObject = null;
+  }
+  handsInstance = null;
+}
+
+cameraBtn.addEventListener('click', () => {
+  arEnabled = !arEnabled;
+  if (arEnabled) {
+    startAR();
+  } else {
+    stopAR();
+  }
+});
