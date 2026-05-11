@@ -167,8 +167,8 @@ body::after {
   transition: border-color 0.3s, box-shadow 0.3s, transform 0.3s;
 }
 
-button.element:focus-visible,
-button.element:hover {
+.element:focus-visible,
+.element:hover {
   border-color: var(--neon-cyan);
   background-color: rgba(0, 242, 255, 0.1);
   box-shadow: 0 0 20px rgba(0, 242, 255, 0.4), inset 0 0 15px rgba(0, 242, 255, 0.2);
@@ -213,8 +213,8 @@ button.element:hover {
   margin: 0 0.2rem;
 }
 
-button.element:focus-visible,
-button.element:hover {
+.element:focus-visible,
+.element:hover {
   border-color: var(--neon-cyan);
   background-color: rgba(0, 242, 255, 0.1);
   box-shadow: 0 0 20px rgba(0, 242, 255, 0.4), inset 0 0 15px rgba(0, 242, 255, 0.2);

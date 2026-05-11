@@ -50,7 +50,7 @@
 
     <!-- Element card template — now includes the Learn More button -->
     <template id="element">
-      <button class="element" data-color="0">
+      <div class="element" data-color="0" role="button" tabindex="0">
         <div class="element-number"></div>
         <div class="element-symbol"></div>
         <div class="element-title"></div>
@@ -58,7 +58,7 @@
         <a class="learn-more-btn" href="Element Wiki.html" target="_blank" onclick="this.href='Element Wiki.html?element=' + this.parentElement.dataset.elementName + '&symbol=' + this.parentElement.dataset.elementSymbol + '&number=' + this.parentElement.dataset.atomicNumber">
           <span class="lm-chevron">&#x276F;</span> LEARN MORE
         </a>
-      </button>
+      </div>
     </template>
     <div id="ar-overlay">
       <div id="ar-modal">

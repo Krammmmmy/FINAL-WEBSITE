@@ -299,6 +299,11 @@ document.addEventListener('click', event => {
     return;
   }
 
+  // Ignore clicks on the Learn More link so the card doesn't toggle first
+  if (event.target.closest('.learn-more-btn')) {
+    return;
+  }
+
   // Expand / collapse individual element card
   const $card = event.target.closest('#scene-content .element');
   const shouldExpand = $card && !$card.classList.contains('is-expanded');
@@ -404,8 +409,27 @@ function processHand(landmarks, handednessLabel) {
           // CRITICAL: We click at the BLUE cursor's location, NOT the Purple cursor's location!
           const elementBelowCursor = document.elementFromPoint(aimCursorX, aimCursorY);
           
-          if (elementBelowCursor) {
-            elementBelowCursor.click(); 
+          // First, try to find the nearest element card
+          const elementCard = elementBelowCursor 
+            ? elementBelowCursor.closest('#scene-content .element')
+            : null;
+          
+          if (elementCard) {
+            // If card is expanded, directly open the learn-more link
+            if (elementCard.classList.contains('is-expanded')) {
+              const learnMoreLink = elementCard.querySelector('.learn-more-btn');
+              if (learnMoreLink) {
+                const href = learnMoreLink.getAttribute('href');
+                const elementName = elementCard.dataset.elementName;
+                const elementSymbol = elementCard.dataset.elementSymbol;
+                const atomicNumber = elementCard.dataset.atomicNumber;
+                const wikiUrl = `${href}?element=${elementName}&symbol=${elementSymbol}&number=${atomicNumber}`;
+                window.open(wikiUrl, '_blank');
+              }
+            } else {
+              // Card is not expanded, so clicking should expand it
+              elementCard.click();
+            }
             
             // Briefly flash the blue cursor to confirm the click landed!
             cursor1.classList.add('pinching');
