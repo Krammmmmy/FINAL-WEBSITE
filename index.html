@@ -38,7 +38,7 @@
               <rect x="1" y="5" width="15" height="14" rx="2" ry="2"/>
             </svg>
           </span>
-          <span class="cam-label">AR&nbsp;OFF</span>
+          <span class="cam-label">Camera&nbsp;OFF</span>
           <span class="cam-status-dot"></span>
         </button>
       </div>
@@ -50,7 +50,7 @@
 
     <!-- Element card template — now includes the Learn More button -->
     <template id="element">
-      <button class="element" data-color="0">
+      <div class="element" data-color="0" role="button" tabindex="0">
         <div class="element-number"></div>
         <div class="element-symbol"></div>
         <div class="element-title"></div>
@@ -58,9 +58,99 @@
         <a class="learn-more-btn" href="Element Wiki.html" target="_blank" onclick="this.href='Element Wiki.html?element=' + this.parentElement.dataset.elementName + '&symbol=' + this.parentElement.dataset.elementSymbol + '&number=' + this.parentElement.dataset.atomicNumber">
           <span class="lm-chevron">&#x276F;</span> LEARN MORE
         </a>
-      </button>
+      </div>
     </template>
-    
+    <div id="ar-overlay">
+      <div id="ar-modal">
+ 
+        <!-- Corner brackets -->
+        <span class="ar-corner top-left"></span>
+        <span class="ar-corner top-right"></span>
+        <span class="ar-corner bottom-left"></span>
+        <span class="ar-corner bottom-right"></span>
+ 
+        <!-- Scanline overlay -->
+        <span class="ar-scanline"></span>
+ 
+        <!-- HEADER -->
+        <div class="ar-header">
+          <div>
+            <div class="ar-header-label">◈ HOLOTABLE :: AR CONTROL GUIDE</div>
+            <div class="ar-header-title">MOTION CONTROL SETUP</div>
+          </div>
+          <button class="ar-close-btn" onclick="document.getElementById('ar-overlay').style.display='none'">&#x2715; CLOSE</button>
+        </div>
+ 
+        <!-- STATUS BAR -->
+        <div class="ar-status-bar">
+          <span class="ar-status-indicator"></span>
+          <span>DUAL-HAND TRACKING ACTIVE</span><span>|</span><span>REQUIRES CAMERA ACCESS</span>
+        </div>
+ 
+        <!-- TWO HAND COLUMNS: LEFT hand on left, RIGHT hand on right -->
+        <div class="ar-controls-grid">
+ 
+          <!-- LEFT HAND — SELECT (pink / pinch.gif) -->
+          <div class="ar-hand-panel left-hand">
+            <div class="ar-hand-title-row">
+              <span class="ar-hand-dot left-dot"></span>
+              <span class="ar-hand-title">Left Hand — SELECT</span>
+            </div>
+            <div class="ar-hand-text">
+              The <span class="ar-highlight-magenta">pink cursor</span> tracks your left hand.<br><br>
+              <span class="ar-highlight-magenta">Pinch</span> your left <span class="ar-highlight-white">thumb + index finger</span> together to <span class="ar-highlight-white">click</span> on whatever the <span class="ar-highlight-cyan">blue cursor</span> is aiming at.
+            </div>
+            <div class="ar-hand-card pink-card">
+              <span class="ar-card-corner top-left"></span>
+              <span class="ar-card-corner top-right"></span>
+              <span class="ar-card-corner bottom-left"></span>
+              <span class="ar-card-corner bottom-right"></span>
+              <img class="hand-gif pinch" src="pinch.gif" alt="Pinch gesture — thumb meets index finger to click">
+            </div>
+            <div class="ar-hand-caption">PINCH = CLICK</div>
+          </div>
+ 
+          <!-- RIGHT HAND — AIM (cyan / point.gif) -->
+          <div class="ar-hand-panel right-hand">
+            <div class="ar-hand-title-row">
+              <span class="ar-hand-dot right-dot"></span>
+              <span class="ar-hand-title">Right Hand — AIM</span>
+            </div>
+            <div class="ar-hand-text">
+              Point your <span class="ar-highlight-cyan">right index finger</span> at the screen. The <span class="ar-highlight-cyan">blue cursor</span> tracks its tip.<br><br>
+              Moving your hand <span class="ar-highlight-white">rotates</span> the 3D scene and hovers over element cards.
+            </div>
+            <div class="ar-hand-card cyan-card">
+              <span class="ar-card-corner top-left"></span>
+              <span class="ar-card-corner top-right"></span>
+              <span class="ar-card-corner bottom-left"></span>
+              <span class="ar-card-corner bottom-right"></span>
+              <img class="hand-gif point" src="point.gif" alt="Pointing gesture — index finger extended upward">
+            </div>
+            <div class="ar-hand-caption cyan-caption">INDEX TIP = CURSOR</div>
+          </div>
+ 
+        </div>
+ 
+        <!-- STEP STRIP -->
+        <div class="ar-step-strip">
+          <div class="ar-step">
+            <span class="ar-step-number">01</span>
+            <span>Click <span class="ar-highlight-white">Camera OFF</span> to enable the camera and start hand tracking.</span>
+          </div>
+          <div class="ar-step">
+            <span class="ar-step-number">02</span>
+            <span>Raise your <span class="ar-highlight-cyan">right hand</span> — move it to aim and rotate the holographic table.</span>
+          </div>
+          <div class="ar-step">
+            <span class="ar-step-number">03</span>
+            <span>Aim, then <span class="ar-highlight-magenta">pinch left</span> thumb + index to select an element card.</span>
+          </div>
+        </div>
+ 
+      </div>
+    </div>
+ 
     <script type="module" src="./script.js"></script>
   </body>
 </html>

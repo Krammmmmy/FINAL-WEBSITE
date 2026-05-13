@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HoloWiki — Element Database</title>
+
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='28' fill='none' stroke='%2300f2ff' stroke-width='4' stroke-dasharray='10 6'/%3E%3Ccircle cx='32' cy='32' r='12' fill='%2300f2ff'/%3E%3C/svg%3E">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700&family=Roboto+Mono:wght@300;400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./WikiStyle.css">
+
+</head>
+
+<body>
+  <div class="wiki-root">
+
+    <!-- Top Nav -->
+    <nav class="wiki-nav">
+      <span class="nav-brand">◈ HOLOTABLE :: ELEMENT DATABASE</span>
+      <a href="index.html" class="back-btn">&#x2190; RETURN TO TABLE</a>
+    </nav>
+
+    <!-- Hero Header (populated by JS) -->
+    <header class="element-hero">
+      <div class="hero-card">
+        <span class="hero-number" id="h-number">—</span>
+        <span class="hero-symbol" id="h-symbol">?</span>
+        <span class="hero-name" id="h-name">Unknown</span>
+      </div>
+      <div class="hero-meta">
+        <div class="hero-title" id="h-title">Loading…</div>
+        <div class="hero-subtitle" id="h-subtitle">HOLOWIKI // ELEMENT RECORD</div>
+      </div>
+    </header>
+
+    <!-- Status Bar -->
+    <div class="status-bar">
+      <span class="status-dot"></span>
+      <span>DATA STREAM ACTIVE</span>
+      <span>|</span>
+      <span>SOURCE: Internet</span>
+      <span>|</span>
+      <span id="fetch-status">INITIALISING…</span>
+    </div>
+
+    <!-- Loading -->
+    <div class="loading-shell" id="loading-shell">
+      <div class="loading-spinner"></div>
+      <div class="loading-text">Querying element database…</div>
+      <div class="loading-bar-wrap"><div class="loading-bar"></div></div>
+    </div>
+
+    <!-- Error -->
+    <div class="error-shell" id="error-shell">
+      <strong>&gt; ERROR :: DATA RETRIEVAL FAILED</strong><br><br>
+      <span id="error-msg"></span>
+    </div>
+
+    <!-- Main Content (hidden until loaded) -->
+    <div class="wiki-content" id="wiki-content">
+
+      <!-- Summary -->
+      <div class="wiki-section" id="sec-summary">
+        <div class="section-label">// 01 — Overview</div>
+        <div class="section-heading">SYSTEM SUMMARY</div>
+        <div class="section-body" id="content-summary"></div>
+      </div>
+
+      <!-- Basic Information -->
+      <div class="wiki-section" id="sec-basic-info">
+        <div class="section-label">// 02 — Basic Information</div>
+        <div class="section-heading">ELEMENT IDENTIFIERS</div>
+        <table class="id-table" id="content-basic-info"></table>
+      </div>
+
+      <!-- Physical Properties -->
+      <div class="wiki-section" id="sec-physical-props">
+        <div class="section-label">// 03 — Physical Properties</div>
+        <div class="section-heading">PHYSICAL CHARACTERISTICS</div>
+        <div class="prop-grid" id="content-physical-props"></div>
+      </div>
+
+      <!-- Chemical Properties -->
+      <div class="wiki-section" id="sec-chemical-props">
+        <div class="section-label">// 04 — Chemical Properties</div>
+        <div class="section-heading">CHEMICAL CHARACTERISTICS</div>
+        <div class="prop-grid" id="content-chemical-props"></div>
+      </div>
+
+      <!-- Atomic Properties -->
+      <div class="wiki-section" id="sec-atomic-props">
+        <div class="section-label">// 05 — Atomic Properties</div>
+        <div class="section-heading">ATOMIC STRUCTURE</div>
+        <div class="prop-grid" id="content-atomic-props"></div>
+      </div>
+
+      <!-- History -->
+      <div class="wiki-section" id="sec-history">
+        <div class="section-label">// 06 — History</div>
+        <div class="section-heading">DISCOVERY LOG</div>
+        <div class="section-body" id="content-history"></div>
+      </div>
+
+      <!-- Uses -->
+      <div class="wiki-section" id="sec-uses">
+        <div class="section-label">// 07 — Applications</div>
+        <div class="section-heading">KNOWN APPLICATIONS</div>
+        <ul class="uses-list" id="content-uses"></ul>
+      </div>
+
+    </div><!-- /wiki-content -->
+  </div><!-- /wiki-root -->
+
+  <script type="module">
+    // ============================================================
+    // IMPORT MODULES
+    // ============================================================
+    import {
+      formatValue,
+      formatNumber,
+      formatList,
+      fetchElementData,
+      fetchWikiContent,
+      buildElementData,
+      organizeElementData
+    } from './DataFetch.js';
+
+    // ============================================================
+    // PARSE URL PARAMS
+    // ============================================================
+    const params = new URLSearchParams(window.location.search);
+    const elName = params.get('element') || 'Hydrogen';
+    const elSymbol = params.get('symbol') || 'H';
+    const elNumber = params.get('number') || '1';
+
+    // Populate hero immediately (before API returns)
+    document.getElementById('h-number').textContent = `#${elNumber}`;
+    document.getElementById('h-symbol').textContent = elSymbol;
+    document.getElementById('h-name').textContent = elName.toUpperCase();
+    document.getElementById('h-title').textContent = elName;
+    document.title = `HoloWiki — ${elName}`;
+
+    // ============================================================
+    // HELPER FUNCTIONS
+    // ============================================================
+    const $ = id => document.getElementById(id);
+
+    function setStatus(txt) {
+      $('fetch-status').textContent = txt;
+    }
+
+    function showError(msg) {
+      $('loading-shell').style.display = 'none';
+      const shell = $('error-shell');
+      shell.style.display = 'block';
+      $('error-msg').textContent = msg;
+      setStatus('ERROR');
+      console.error('Element Wiki Error:', msg);
+    }
+
+    function showContent() {
+      $('loading-shell').style.display = 'none';
+      const wc = $('wiki-content');
+      wc.style.display = 'flex';
+      setStatus('RECORD LOADED');
+    }
+
+    // ============================================================
+    // RENDER FUNCTIONS
+    // ============================================================
+    function renderSummary(text) {
+      const container = $('content-summary');
+      if (!text || text.trim() === '') {
+        container.innerHTML = '<p>Summary data not available at this time.</p>';
+        return;
+      }
+      container.innerHTML = text
+        .split('\n')
+        .filter(l => l.trim())
+        .slice(0, 3)
+        .map(p => `<p>${p.trim()}</p>`)
+        .join('');
+    }
+
+    function renderBasicInfo(basicInfo) {
+      const rows = [
+        { key: 'Name', value: basicInfo.name },
+        { key: 'Symbol', value: basicInfo.symbol },
+        { key: 'Atomic Number', value: basicInfo.atomicNumber },
+        { key: 'Group Block', value: basicInfo.groupBlock },
+        { key: 'Year Discovered', value: basicInfo.yearDiscovered }
+      ];
+      $('content-basic-info').innerHTML = rows
+        .map(r => `<tr><td>${r.key}</td><td>${r.value}</td></tr>`)
+        .join('');
+    }
+
+    function renderPhysicalProps(physicalProps) {
+      const props = [
+        { key: 'Atomic Radius', value: physicalProps.atomicRadius },
+        { key: 'Boiling Point', value: physicalProps.boilingPoint },
+        { key: 'Density', value: physicalProps.density },
+        { key: 'Melting Point', value: physicalProps.meltingPoint },
+        { key: 'Van der Waals Radius', value: physicalProps.vanDerWaalsRadius },
+        { key: 'Standard State', value: physicalProps.standardState },
+        { key: 'CPK Color', value: physicalProps.cpkHexColor ? `<span style="display:inline-block; width:20px; height:20px; background-color:${physicalProps.cpkHexColor}; border:1px solid #00f2ff; border-radius:3px;" title="${physicalProps.cpkHexColor}"></span> ${physicalProps.cpkHexColor}` : 'Unknown' }
+      ];
+      $('content-physical-props').innerHTML = props
+        .map(p => `<div class="prop-item"><div class="prop-key">${p.key}</div><div class="prop-val">${p.value}</div></div>`)
+        .join('');
+    }
+
+    function renderChemicalProps(chemicalProps) {
+      const props = [
+        { key: 'Electron Affinity', value: chemicalProps.electronAffinity },
+        { key: 'Electronegativity', value: chemicalProps.electronegativity },
+        { key: 'Ionization Energy', value: chemicalProps.ionizationEnergy }
+      ];
+      $('content-chemical-props').innerHTML = props
+        .map(p => `<div class="prop-item"><div class="prop-key">${p.key}</div><div class="prop-val">${p.value}</div></div>`)
+        .join('');
+    }
+
+    function renderAtomicProps(atomicProps) {
+      const props = [
+        { key: 'Atomic Mass', value: atomicProps.atomicMass }
+      ];
+      $('content-atomic-props').innerHTML = props
+        .map(p => `<div class="prop-item"><div class="prop-key">${p.key}</div><div class="prop-val">${p.value}</div></div>`)
+        .join('');
+    }
+
+    function renderHistory(text) {
+      const container = $('content-history');
+      if (!text || text.trim() === '') {
+        container.innerHTML = '<p>History data not available at this time.</p>';
+        return;
+      }
+      container.innerHTML = text
+        .split('\n')
+        .filter(l => l.trim())
+        .slice(0, 3)
+        .map(p => `<p>${p.trim()}</p>`)
+        .join('');
+    }
+
+    function renderUses(uses) {
+      if (!uses || uses.length === 0) {
+        $('content-uses').innerHTML = '<li>Application data not available at this time.</li>';
+        return;
+      }
+      $('content-uses').innerHTML = uses
+        .map(u => `<li>${u}</li>`)
+        .join('');
+    }
+
+    // ============================================================
+    // FETCH AND DISPLAY ELEMENT DATA
+    // ============================================================
+    async function fetchAndDisplayElement() {
+      setStatus('QUERYING DATABASE…');
+
+      try {
+        // Fetch element data and Wikipedia content in parallel
+        const elementData = await fetchElementData(elName);
+        const wikiData = await fetchWikiContent(elName);
+
+        if (!elementData) {
+          throw new Error('Element data not found in API');
+        }
+
+        // Organize element data into sections
+        const organized = organizeElementData(elementData);
+
+        // Extract Wikipedia text
+        const wikiText = wikiData?.extract || '';
+
+        // Build summary from Wikipedia (first 2-3 paragraphs)
+        const summaryParagraphs = wikiText.split('\n').filter(l => l.trim()).slice(0, 2);
+        const summary = summaryParagraphs.join(' ');
+
+        // Build history from Wikipedia (middle paragraphs)
+        const historyParagraphs = wikiText.split('\n').filter(l => l.trim()).slice(2, 5);
+        const history = historyParagraphs.join(' ');
+
+        // Build uses/applications list
+        const uses = getElementUses(elName);
+
+        // Render all sections
+        renderSummary(summary);
+        renderBasicInfo(organized.basicInfo);
+        renderPhysicalProps(organized.physicalProperties);
+        renderChemicalProps(organized.chemicalProperties);
+        renderAtomicProps(organized.atomicProperties);
+        renderHistory(history);
+        renderUses(uses);
+
+        showContent();
+        console.log('Element data loaded successfully:', elementData);
+
+      } catch (err) {
+        showError(err.message || 'Failed to retrieve element data. Please check the element name and try again.');
+      }
+    }
+
+    // ============================================================
+    // UTILITY: Get common uses for elements
+    // ============================================================
+    function getElementUses(name) {
+      const usesMap = {
+        'Hydrogen': ['Fuel source', 'Water formation', 'Hydrogenation of fats', 'Rocket propellant', 'Chemical synthesis'],
+        'Oxygen': ['Respiration in living organisms', 'Combustion processes', 'Medical oxygen therapy', 'Water treatment', 'Industrial oxidation'],
+        'Carbon': ['Organic chemistry backbone', 'Energy source (fossil fuels)', 'Concrete and steel production', 'Diamond and graphite products', 'Electronics and composites'],
+        'Nitrogen': ['Fertilizer production', 'Inert gas for preservation', 'Industrial coolant', 'Explosives manufacturing', 'Semiconductor production'],
+        'Copper': ['Electrical wiring and conductors', 'Plumbing materials', 'Alloys like brass and bronze', 'Electronics components', 'Antimicrobial applications'],
+        'Iron': ['Steel production', 'Construction materials', 'Automotive components', 'Machinery and tools', 'Oxygen transport in blood'],
+        'Gold': ['Jewelry and ornaments', 'Electronics and circuitry', 'Dental applications', 'Investment and currency', 'Medical devices'],
+        'Silver': ['Jewelry and tableware', 'Photography', 'Electronics and conductors', 'Antimicrobial coatings', 'Mirrors and reflectors'],
+        'Aluminum': ['Aircraft and aerospace', 'Beverage containers', 'Construction materials', 'Electrical transmission', 'Automotive parts'],
+        'Chlorine': ['Water purification', 'Disinfection and bleaching', 'PVC plastic production', 'Chemical synthesis', 'Salt processing'],
+        'Sodium': ['Table salt production', 'Street lighting', 'Heat transfer', 'Chemical synthesis', 'Metal alloys'],
+        'Sulfur': ['Fertilizer production', 'Rubber vulcanization', 'Petroleum refining', 'Sulfuric acid production', 'Matchbox production'],
+        'Phosphorus': ['Fertilizer production', 'Detergent components', 'Flame retardants', 'Biochemical energy transfer', 'Semiconductor production'],
+        'Calcium': ['Building materials', 'Dietary supplements', 'Cement production', 'Water treatment', 'Steel production'],
+        'Magnesium': ['Aircraft and aerospace', 'Automotive parts', 'Alloy production', 'Dietary supplements', 'Fireworks'],
+        'Potassium': ['Fertilizer production', 'Soap production', 'Medical applications', 'Water treatment', 'Heat transfer fluids']
+      };
+      return usesMap[name] || ['Industrial applications', 'Research and development', 'Material science', 'Chemical compounds', 'Advanced manufacturing'];
+    }
+
+    // ============================================================
+    // INITIALIZE
+    // ============================================================
+    fetchAndDisplayElement();
+  </script>
+</body>
+</html>
