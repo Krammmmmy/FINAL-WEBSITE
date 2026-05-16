@@ -152,7 +152,22 @@ for (let i = 0, l = elements.length / ELEMENT_STRIDE; i < l; i += 1) {
 
   const name = elements[offset + ELEMENT_FIELDS.NAME];
   const symbol = elements[offset + ELEMENT_FIELDS.SYMBOL];
-  const atomicNumber = i + 1;
+  
+
+
+  // Fix atomic number calculation for elements 57-118
+  let atomicNumber;
+  if (i < 56) {
+    atomicNumber = i + 1;  // H to Ba (1-56)
+  } else if (i < 73) {
+    atomicNumber = i + 16;  // Hf to Ra (72-88)
+  } else if (i < 88) {
+    atomicNumber = i + 31;  // Rf to Og (104-118)
+  } else if (i < 103) {
+    atomicNumber = i - 31;  // La to Lu (57-71)
+  } else {
+    atomicNumber = i - 14;  // Ac to Lr (89-103)
+  }
 
   $number.textContent = atomicNumber;
   $symbol.textContent = symbol;
@@ -212,19 +227,26 @@ const transformLayout = {
   },
   sphere: () => {
     const radius = 300;
-    pointer.rotateX = 40;
-    pointer.rotateY = 360;
+    const count = cards.length;
+    const goldenRatio = (1 + Math.sqrt(5)) / 2;
+
     cards.forEach(($el, i) => {
-      const offsetZ = $el.classList.contains('is-expanded') ? 30 : 0;
-      const phi = Math.acos(-1 + (2 * i) / cards.length);
-      const theta = Math.sqrt(cards.length * Math.PI) * phi;
-      const sinPhi = Math.sin(phi);
-      const x = radius * sinPhi * Math.cos(theta);
-      const y = radius * Math.cos(phi);
-      const z = radius * sinPhi * Math.sin(theta);
+      const phi = Math.acos(1 - 2 * (i + 0.5) / count);
+      const theta = 2 * Math.PI * i / goldenRatio;
+
+      const x = radius * Math.sin(phi) * Math.cos(theta);
+      const y = radius * Math.sin(phi) * Math.sin(theta);
+      const z = radius * Math.cos(phi);
+
+      // SAVE THESE for the visibility loop
+      $el.dataset.posX = x;
+      $el.dataset.posY = y;
+      $el.dataset.posZ = z;
+
       const yaw = Math.atan2(x, z);
       const pitch = -Math.atan2(y, Math.hypot(x, z));
-      $el.style.transform = `translate3d(${x}px, ${y}px, ${z}px) rotateY(${yaw}rad) rotateX(${pitch}rad) translateZ(${offsetZ}px)`;
+
+      $el.style.transform = `translate3d(${x}px, ${y}px, ${z}px) rotateY(${yaw}rad) rotateX(${pitch}rad)`;
     });
   },
   helix: () => {
@@ -340,6 +362,28 @@ function mapRange(value, inMin, inMax, outMin, outMax) {
   return ((value - inMin) / (inMax - inMin)) * (outMax - outMin) + outMin;
 }
 
+// At the top of your script.js or inside your initialization function
+window.addEventListener('DOMContentLoaded', () => {
+  const tutorialOverlay = document.querySelector('.ar-tutorial-overlay'); // Adjust selector to your tutorial ID
+  const hasSeenTutorial = localStorage.getItem('holoTable_tutorial_seen');
+
+  if (hasSeenTutorial) {
+    // If they've seen it, hide it immediately without animation
+    tutorialOverlay.style.display = 'none';
+  } else {
+    // If it's their first time, let it show, then save the state when they close it
+    // Assuming you have a "Got it" or "Start" button
+    const closeBtn = document.querySelector('.ar-close-btn'); 
+    if (closeBtn) {
+      closeBtn.addEventListener('click', () => {
+        localStorage.setItem('holoTable_tutorial_seen', 'true');
+        tutorialOverlay.style.display = 'none';
+      });
+    }
+  }
+});
+
+
 // --- DUAL-HAND AR TRACKING LOGIC (AIM & FIRE SETUP) ---
 
 const videoElement = document.querySelector('.input_video');
@@ -434,6 +478,15 @@ function processHand(landmarks, handednessLabel) {
             // Briefly flash the blue cursor to confirm the click landed!
             cursor1.classList.add('pinching');
             setTimeout(() => cursor1.classList.remove('pinching'), 200);
+          } else if (elementBelowCursor) {
+            // Fallback: if not a card, try to click the element directly (handles buttons, toggles, etc.)
+            const clickableElement = elementBelowCursor.closest('button, a, [role="button"]');
+            if (clickableElement) {
+              clickableElement.click();
+              // Flash the cursor to confirm the click
+              cursor1.classList.add('pinching');
+              setTimeout(() => cursor1.classList.remove('pinching'), 200);
+            }
           }
           pinchState[handednessLabel].lastClick = now;
         }
@@ -509,5 +562,118 @@ cameraBtn.addEventListener('click', () => {
     startAR();
   } else {
     stopAR();
+  }
+});
+
+// The dynamic visibility engine
+let currentRotY = 0;
+let currentRotX = 0;
+
+function updateVisibility() {
+  if (layoutType === 'sphere') {
+    // Smooth the rotation: move 10% of the way to the target every frame
+    currentRotY += (pointer.rotateY - currentRotY) * 0.1;
+    currentRotX += (pointer.rotateX - currentRotX) * 0.1;
+
+    const rotY = currentRotY * (Math.PI / 180);
+    const rotX = currentRotX * (Math.PI / 180);
+
+    cards.forEach(($el) => {
+      const x = parseFloat($el.dataset.posX) || 0;
+      const y = parseFloat($el.dataset.posY) || 0;
+      const z = parseFloat($el.dataset.posZ) || 0;
+
+      // Calculate depth based on the SMOOTHED rotation
+      const rotatedZ = 
+        z * Math.cos(rotX) * Math.cos(rotY) - 
+        x * Math.cos(rotX) * Math.sin(rotY) - 
+        y * Math.sin(rotX);
+
+      if (rotatedZ < -100) {
+        $el.style.opacity = "0";
+        $el.style.pointerEvents = "none";
+      } else {
+        $el.style.opacity = "1";
+        $el.style.pointerEvents = "auto";
+      }
+    });
+
+    // Apply the smoothed rotation to the container
+    const scene = document.querySelector('#scene-content');
+    if (scene) {
+      scene.style.transform = `rotateX(${currentRotX}deg) rotateY(${currentRotY}deg)`;
+    }
+  }
+  
+  requestAnimationFrame(updateVisibility);
+}
+
+// Start the loop immediately
+updateVisibility();
+
+
+// =========================================
+// TUTORIAL SYSTEM (One-time show + Toggle)
+// =========================================
+const arOverlay = document.getElementById('ar-overlay');
+const tutorialOverlay = document.getElementById('ar-tutorial-overlay');
+const tutorialToggleBtn = document.getElementById('tutorial-toggle');
+const closeTutorialBtn = document.getElementById('close-tutorial');
+
+// Function to show AR overlay (main tutorial)
+function showAROverlay() {
+  arOverlay.style.display = 'flex';
+}
+
+// Function to hide AR overlay
+function hideAROverlay() {
+  arOverlay.style.display = 'none';
+}
+
+// Function to show tutorial
+function showTutorial() {
+  tutorialOverlay.style.display = 'flex';
+  setTimeout(() => {
+    tutorialOverlay.style.opacity = '1';
+  }, 10);
+}
+
+// Function to hide tutorial
+function hideTutorial() {
+  tutorialOverlay.style.opacity = '0';
+  setTimeout(() => {
+    tutorialOverlay.style.display = 'none';
+  }, 500); // Matches CSS transition time
+}
+
+// 1. Check if user has seen tutorial before
+window.addEventListener('DOMContentLoaded', () => {
+  const hasSeenTutorial = localStorage.getItem('hasSeenHoloTutorial');
+
+  if (!hasSeenTutorial) {
+    showTutorial();
+    // Mark as seen so it doesn't auto-show next time
+    localStorage.setItem('hasSeenHoloTutorial', 'true');
+  }
+});
+
+// 2. Manual Toggle (The "?" Button) — toggles the AR control guide overlay
+tutorialToggleBtn.addEventListener('click', () => {
+  if (arOverlay.style.display === 'none') {
+    // If hidden, show it
+    showAROverlay();
+  } else {
+    // If shown, hide it
+    hideAROverlay();
+  }
+});
+
+// 3. Close Button logic
+closeTutorialBtn.addEventListener('click', hideTutorial);
+
+// 4. Close on clicking outside the content box
+tutorialOverlay.addEventListener('click', (e) => {
+  if (e.target === tutorialOverlay) {
+    hideTutorial();
   }
 });

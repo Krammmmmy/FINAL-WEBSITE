@@ -1,0 +1,357 @@
+/* ===== HOLOTABLE EXPERIMENT UI - PREMIUM UPGRADE ===== */
+
+:root {
+  --neon-cyan: #00f2ff;
+  --neon-magenta: #ff00ff;
+  --neon-green: #00ff00;
+  --bg-dark: #050816;
+  --glass-bg: rgba(10, 25, 41, 0.6);
+  --glass-border: rgba(0, 242, 255, 0.2);
+}
+
+body {
+  margin: 0;
+  background: var(--bg-dark);
+  /* Adds a subtle holographic glow to the background */
+  background-image: 
+    radial-gradient(circle at 50% -20%, rgba(0, 242, 255, 0.15) 0%, transparent 50%),
+    radial-gradient(circle at 50% 120%, rgba(255, 0, 255, 0.1) 0%, transparent 50%);
+  color: var(--neon-cyan);
+  font-family: 'Orbitron', sans-serif;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* --- NAVIGATION BAR --- */
+.top-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 30px;
+  background: rgba(5, 8, 22, 0.8);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--glass-border);
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
+  z-index: 10;
+}
+
+.top-bar h1 {
+  margin: 0;
+  font-size: 1.5rem;
+  letter-spacing: 2px;
+  text-shadow: 0 0 10px rgba(0, 242, 255, 0.5);
+}
+
+.top-bar button {
+  background: transparent;
+  color: var(--neon-cyan);
+  border: 1px solid var(--neon-cyan);
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: 'Orbitron', sans-serif;
+  text-transform: uppercase;
+}
+
+.top-bar button:hover {
+  background: var(--neon-cyan);
+  color: var(--bg-dark);
+  box-shadow: 0 0 15px var(--neon-cyan);
+}
+
+/* --- MAIN LAYOUT --- */
+.experiment-ui {
+  display: flex;
+  flex: 1;
+  height: calc(100vh - 70px);
+}
+
+/* --- LEFT PANEL: ELEMENTS --- */
+.elements-panel {
+  width: 35%;
+  background: var(--glass-bg);
+  backdrop-filter: blur(12px);
+  border-right: 1px solid var(--glass-border);
+  padding: 25px;
+  display: flex;
+  flex-direction: column;
+}
+
+.elements-panel h2 {
+  margin-top: 0;
+  font-size: 1.2rem;
+  letter-spacing: 1px;
+  border-bottom: 1px solid var(--glass-border);
+  padding-bottom: 15px;
+  margin-bottom: 20px;
+}
+
+.element-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  overflow-y: auto;
+  padding-right: 10px; /* Space for scrollbar */
+  padding-bottom: 20px;
+  
+  /* ADD THESE TWO LINES */
+  flex: 1; 
+  align-content: flex-start;
+  min-height: 0; /* THIS IS THE MAGIC FIX */
+}
+
+/* Custom Scrollbar for the elements list */
+.element-list::-webkit-scrollbar { width: 6px; }
+.element-list::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); }
+.element-list::-webkit-scrollbar-thumb { background: var(--neon-cyan); border-radius: 3px; }
+
+.element-card {
+  width: 50px;
+  height: 50px;
+  background: rgba(0, 242, 255, 0.05);
+  border: 1px solid var(--glass-border);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.4rem;
+  font-weight: bold;
+  cursor: grab;
+  transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
+  box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+}
+
+.element-card:hover {
+  background: rgba(0, 242, 255, 0.2);
+  border-color: var(--neon-cyan);
+  transform: translateY(-3px) scale(1.05);
+  box-shadow: 0 5px 15px rgba(0, 242, 255, 0.4);
+}
+
+
+
+.element-card:active {
+  cursor: grabbing;
+  transform: scale(0.95);
+}
+
+/* --- RIGHT PANEL: REACTION ZONE --- */
+.reaction-zone {
+  flex: 1;
+  padding: 40px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  position: relative;
+}
+
+/* The Drop Zone ("The Reactor") */
+.drop-zone {
+  width: 100%;
+  max-width: 600px;
+  height: 280px;
+  background: radial-gradient(circle, rgba(255,0,255,0.05) 0%, rgba(0,0,0,0.4) 80%);
+  border: 2px dashed rgba(255, 0, 255, 0.5);
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 30px;
+  flex-wrap: wrap;
+  gap: 20px;
+  padding: 20px;
+  transition: all 0.3s ease;
+  box-shadow: inset 0 0 30px rgba(0,0,0,0.5);
+  color: rgba(255, 0, 255, 0.6);
+  font-size: 1.2rem;
+  letter-spacing: 2px;
+}
+
+/* Active state when hovering a dragged item */
+.drop-zone.active-drag {
+  border-color: var(--neon-green);
+  background: radial-gradient(circle, rgba(0,255,0,0.1) 0%, rgba(0,0,0,0.4) 80%);
+  box-shadow: inset 0 0 40px rgba(0, 255, 0, 0.2);
+}
+
+.selected-atom {
+  width: 80px;
+  height: 80px;
+  background: rgba(0, 242, 255, 0.1);
+  border: 2px solid var(--neon-cyan);
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 1.8rem;
+  font-weight: bold;
+  box-shadow: 0 0 20px rgba(0, 242, 255, 0.4), inset 0 0 15px rgba(0, 242, 255, 0.2);
+  animation: floatAtom 3s ease-in-out infinite alternate;
+  transition: all 0.2s ease;
+}
+
+.selected-atom:hover {
+  border-color: var(--neon-magenta);
+  box-shadow: 0 0 20px rgba(255, 0, 255, 0.6);
+  transform: scale(1.1);
+}
+
+@keyframes floatAtom {
+  0% { transform: translateY(0px); }
+  100% { transform: translateY(-10px); }
+}
+
+/* --- THE COMBINE BUTTON --- */
+#combine-btn {
+  background: rgba(0, 242, 255, 0.1);
+  color: var(--neon-cyan);
+  border: 2px solid var(--neon-cyan);
+  padding: 15px 50px;
+  font-size: 1.2rem;
+  font-family: 'Orbitron', sans-serif;
+  font-weight: bold;
+  letter-spacing: 3px;
+  border-radius: 30px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-bottom: 30px;
+  position: relative;
+  overflow: hidden;
+}
+
+#combine-btn:hover {
+  background: var(--neon-cyan);
+  color: var(--bg-dark);
+  box-shadow: 0 0 25px var(--neon-cyan);
+  transform: scale(1.05);
+}
+
+#combine-btn:active {
+  transform: scale(0.98);
+}
+
+/* --- REACTION RESULT TERMINAL --- */
+.reaction-result {
+  width: 100%;
+  max-width: 600px;
+  background: rgba(0, 0, 0, 0.6);
+  border: 1px solid var(--glass-border);
+  border-left: 4px solid var(--neon-cyan);
+  border-radius: 0 8px 8px 0;
+  padding: 25px;
+  min-height: 120px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+  font-family: 'Courier New', Courier, monospace; /* Terminal vibe */
+  color: #e0f7ff;
+}
+
+.reaction-result h2 {
+  color: var(--neon-cyan);
+  margin-top: 0;
+  font-family: 'Orbitron', sans-serif;
+  letter-spacing: 1px;
+}
+
+.reaction-result p {
+  line-height: 1.6;
+  font-size: 1.1rem;
+}
+
+/* Animations for the result text showing up */
+@keyframes typeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.reaction-result h2, .reaction-result p {
+  animation: typeIn 0.4s ease forwards;
+}
+
+/* =========================================
+   2D COMPOUND STRUCTURE STYLES
+========================================= */
+.structure-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 15px;
+  padding: 10px;
+  background: rgba(0, 242, 255, 0.05);
+  border: 1px dashed var(--glass-border);
+  border-radius: 8px;
+}
+
+.compound-structure-2d {
+  max-width: 100%;
+  height: auto;
+  max-height: 100%; /* Keeps it from taking over the screen on mobile */
+  object-fit: contain;
+  
+  /* Turns black lines on white bg -> glowing white/cyan lines on dark bg */
+  filter: invert(1) hue-rotate(180deg) brightness(1.5) drop-shadow(0 0 5px rgba(0, 242, 255, 0.5));
+  transition: transform 0.3s ease;
+}
+
+.compound-structure-2d:hover {
+  transform: scale(1.05);
+}
+
+/* =========================================
+   MOBILE RESPONSIVENESS (ExMode.css)
+========================================= */
+@media screen and (max-width: 768px) {
+  .top-bar {
+    flex-direction: column;
+    gap: 15px;
+    text-align: center;
+    padding: 15px;
+  }
+
+  h1 {
+    font-size: 1.2rem;
+  }
+
+  /* Switch from side-by-side to stacked */
+  .experiment-ui {
+    flex-direction: column;
+    height: auto;
+    min-height: 100vh;
+  }
+
+  /* Turn the element list into a horizontal scrolling row on mobile */
+  .elements-panel {
+    width: 100%;
+    border-right: none;
+    border-bottom: 1px solid var(--glass-border);
+    padding: 15px;
+    /* Limit height so the drop zone remains visible */
+    max-height: 35vh; 
+    overflow-y: auto;
+  }
+
+  .element-list {
+    justify-content: center;
+  }
+
+  .reaction-zone {
+    width: 100%;
+    padding: 15px;
+  }
+
+  .drop-zone {
+    height: 180px;
+    padding: 10px;
+  }
+
+  #combine-btn {
+    width: 100%;
+    padding: 15px;
+  }
+
+  .reaction-result {
+    margin-top: 15px;
+  }
+}

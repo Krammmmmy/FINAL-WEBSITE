@@ -6,8 +6,37 @@
   --padding: 1rem;
   --bg-dark: #020617;
   --header-height: 5rem;
+  /* Default theme color for elements */
+  --theme: var(--neon-cyan);
 }
 
+/* =========================================
+   SCI-FI IMMERSION: COLOR CATEGORIES
+   ========================================= */
+
+/* 1. Define the theme color for each chemical group */
+.element[data-color="0"] { --theme: #00f2ff; } /* Nonmetals (Cyan) */
+.element[data-color="1"] { --theme: #b900ff; } /* Noble Gases (Purple) */
+.element[data-color="2"] { --theme: #ff0055; } /* Alkali (Neon Red) */
+.element[data-color="3"] { --theme: #ff6600; } /* Alkaline Earth (Orange) */
+.element[data-color="4"] { --theme: #00ff66; } /* Metalloids (Green) */
+.element[data-color="5"] { --theme: #00aaff; } /* Post-transition (Blue) */
+.element[data-color="6"] { --theme: #ffd500; } /* Transition Metals (Gold) */
+.element[data-color="7"] { --theme: #ff00aa; } /* Lanthanides (Pink) */
+
+/* Radioactive elements get a special green pulse effect */
+.element[data-color="8"] { 
+  --theme: #39ff14; 
+  animation: radioactivePulse 2s infinite; 
+} 
+
+.element[data-color="9"] { --theme: #aaaaaa; } /* Unknown (Grey) */
+
+@keyframes radioactivePulse {
+  0% { box-shadow: 0 0 5px var(--theme); }
+  50% { box-shadow: 0 0 15px var(--theme); } /* Lower this value if it's too bright */
+  100% { box-shadow: 0 0 5px var(--theme); }
+}
 /* --- AR CAMERA & CURSOR STYLES --- */
 .input_video {
   position: fixed;
@@ -110,6 +139,7 @@ body::after {
   padding: var(--header-height) var(--padding);
   inset: 0;
   box-sizing: border-box; /* This stops the padding from pushing the bottom off-screen */
+  
 }
 
 #scene-content {
@@ -137,9 +167,9 @@ body::after {
 /* Responsive Base Element Card - Forced Fit */
 .element {
   /* 90vw leaves 5% margin on each side, divided by 18 columns */
-  --w: calc(80vw / 18);
+  --w: calc(60vw / 18);
   /* 75vh leaves room for the header and gaps, divided by 10 rows */
-  --h: calc(65vh / 10);
+  --h: calc(45vh / 10);
   
   overflow: hidden;
   pointer-events: auto;
@@ -152,10 +182,10 @@ body::after {
   background: var(--glass-bg);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
-  border: 1px solid var(--border-glow);
-  box-shadow: 0 0 15px rgba(0, 0, 0, 0.5), inset 0 0 10px rgba(0, 242, 255, 0.05);
+  border: 2px solid var(--theme);
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.5), inset 0 0 10px var(--theme);
   
-  color: var(--neon-cyan);
+  color: var(--theme);
   width: var(--w);
   height: var(--h);
   border-radius: 4px;
@@ -165,13 +195,21 @@ body::after {
   z-index: 8;
   cursor: pointer;
   transition: border-color 0.3s, box-shadow 0.3s, transform 0.3s;
+  will-change: transform, box-shadow;
+
+  /* This ensures cards vanish when they face away from the user */
+  backface-visibility: hidden; 
+  -webkit-backface-visibility: hidden;
+  
+  /* Smooth fading when rotating to the back */
+  transition: transform 0.8s ease-out, opacity 0.4s ease-in-out;
 }
 
 .element:focus-visible,
 .element:hover {
-  border-color: var(--neon-cyan);
-  background-color: rgba(0, 242, 255, 0.1);
-  box-shadow: 0 0 20px rgba(0, 242, 255, 0.4), inset 0 0 15px rgba(0, 242, 255, 0.2);
+  border-color: var(--theme);
+  background-color: rgba(0, 0, 0, 0.85);
+  box-shadow: 0 0 30px var(--theme), inset 0 0 20px var(--theme);
   outline: none;
 }
 
@@ -184,7 +222,7 @@ body::after {
   font-size: 2.5vmin; 
   font-weight: 300;
   letter-spacing: -1px;
-  text-shadow: 0 0 8px var(--neon-cyan);
+  text-shadow: 0 0 10px var(--theme);
 }
 
 .element-title {
@@ -213,24 +251,16 @@ body::after {
   margin: 0 0.2rem;
 }
 
-.element:focus-visible,
-.element:hover {
-  border-color: var(--neon-cyan);
-  background-color: rgba(0, 242, 255, 0.1);
-  box-shadow: 0 0 20px rgba(0, 242, 255, 0.4), inset 0 0 15px rgba(0, 242, 255, 0.2);
-  outline: none;
-}
-
 /* Expanded Hologram State */
 .element.is-expanded {
   --w: 20rem;
   --h: 22rem;
   background: rgba(4, 13, 26, 0.95);
-  border: 2px solid var(--neon-cyan);
+  border: 2px solid var(--theme);
   z-index: 100;
   padding: 1.5rem;
   align-items: flex-start;
-  box-shadow: 0 0 50px rgba(0, 242, 255, 0.3), inset 0 0 30px rgba(0, 242, 255, 0.1);
+  box-shadow: 0 0 50px var(--theme), inset 0 0 30px var(--theme);
 }
 
 
@@ -248,7 +278,7 @@ body::after {
   font-size: 1.5rem;
   text-align: left;
   margin-top: 0.5rem;
-  text-shadow: 0 0 5px var(--neon-cyan);
+  text-shadow: 0 0 8px var(--theme);
 }
 
 
@@ -270,11 +300,18 @@ body::after {
   font-family: 'Courier New', Courier, monospace;
   font-size: 0.75rem;
   line-height: 1.5;
-  border-top: 1px solid var(--border-glow);
+  border-top: 1px solid var(--theme);
   margin-top: 1rem;
   padding-top: 1rem;
   color: #a0c3d2;
   text-align: left;
+}
+
+/* 2. Custom Animation for Radioactive Elements (data-color="8") */
+@keyframes radioactivePulse {
+  0%   { box-shadow: 0 0 5px #39ff14, inset 0 0 5px #39ff14; }
+  50%  { box-shadow: 0 0 25px #39ff14, inset 0 0 20px #39ff14; }
+  100% { box-shadow: 0 0 5px #39ff14, inset 0 0 5px #39ff14; }
 }
 
 .element.is-expanded .element-description {
@@ -337,8 +374,8 @@ body::after {
 }
 
 #ar-modal {
-  width: min(760px, 94vw);
-  min-height: 480px;
+  width: min(1000px);
+  min-height: 680px;
   background: rgba(4, 13, 26, 0.97);
   border: 1.5px solid rgba(0, 242, 255, 0.45);
   box-shadow: 0 0 60px rgba(0, 242, 255, 0.18), inset 0 0 40px rgba(0, 242, 255, 0.04);
@@ -384,7 +421,7 @@ body::after {
 
 .ar-header-label {
   font-family: 'Orbitron', monospace;
-  font-size: 0.58rem;
+  font-size: 1rem;
   letter-spacing: 4px;
   color: #00f2ff;
   opacity: 0.65;
@@ -394,7 +431,7 @@ body::after {
 
 .ar-header-title {
   font-family: 'Orbitron', monospace;
-  font-size: 1.05rem;
+  font-size: 1.5rem;
   font-weight: 700;
   color: #00f2ff;
   text-shadow: 0 0 14px rgba(0, 242, 255, 0.55);
@@ -406,7 +443,7 @@ body::after {
   border: 1px solid rgba(0, 98, 255, 0.5);
   color: #0062ff;
   font-family: 'Roboto Mono', monospace;
-  font-size: 0.68rem;
+  font-size: 1rem;
   letter-spacing: 2px;
   padding: 0.4rem 1rem;
   cursor: pointer;
@@ -427,7 +464,7 @@ body::after {
   padding: 0.38rem 1.4rem;
   background: rgba(0, 242, 255, 0.03);
   border-bottom: 1px solid rgba(0, 242, 255, 0.08);
-  font-size: 0.6rem;
+  font-size: 1rem;
   letter-spacing: 2px;
   color: #00f2ff;
   opacity: 0.55;
@@ -497,7 +534,7 @@ body::after {
 
 .ar-hand-title {
   font-family: 'Orbitron', monospace;
-  font-size: 0.7rem;
+  font-size: 1.25rem;
   letter-spacing: 3px;
   color: #00f2ff;
   text-transform: uppercase;
@@ -509,7 +546,7 @@ body::after {
 
 .ar-hand-text {
   width: 100%;
-  font-size: 0.72rem;
+  font-size: 1.25rem;
   color: #a0c3d2;
   line-height: 1.8;
 }
@@ -566,7 +603,7 @@ body::after {
 }
 
 .ar-hand-caption {
-  font-size: 0.62rem;
+  font-size: 1rem;
   letter-spacing: 2px;
   opacity: 0.65;
   text-transform: uppercase;
@@ -588,7 +625,7 @@ body::after {
   display: flex;
   align-items: flex-start;
   gap: 0.5rem;
-  font-size: 0.65rem;
+  font-size: 1.25;
   color: #a0c3d2;
   line-height: 1.65;
 }
@@ -601,7 +638,7 @@ body::after {
 .ar-step-number {
   font-family: 'Orbitron', monospace;
   color: #00f2ff;
-  font-size: 0.72rem;
+  font-size: 1rem;
   flex-shrink: 0;
 }
 
@@ -643,6 +680,7 @@ body::after {
   flex-direction: row;
   height: var(--header-height);
   gap: calc(var(--padding) * .5);
+  padding: 0 4rem 0 0;
 }
 
 .controls button {
@@ -751,4 +789,84 @@ body::after {
 /* Hide standard credits for a cleaner HUD look, or style them sci-fi */
 .credits {
   display: none; 
+}
+
+.ar-tutorial-overlay {
+  display: none; /* Controlled by JS */
+  position: fixed;
+  inset: 0;
+  background: rgba(2, 6, 23, 0.9);
+  backdrop-filter: blur(10px);
+  z-index: 10000;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.5s ease;
+}
+
+/* Ensure the button is always clickable */
+#tutorial-toggle {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: var(--glass-bg);
+  border: 1px solid var(--neon-cyan);
+  color: var(--neon-cyan);
+  font-family: 'Orbitron', sans-serif;
+  cursor: pointer;
+  z-index: 10001; /* Higher than the overlay */
+}
+/* =========================================
+   MOBILE RESPONSIVENESS (style.css)
+========================================= */
+@media screen and (max-width: 768px) {
+  /* Adjust Header */
+  header {
+    flex-direction: column;
+    gap: 15px;
+    height: auto;
+    padding: 15px;
+    justify-content: center;
+  }
+
+  .nav-controls {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+  }
+
+  .camera-btn, .mode-btn {
+    padding: 10px 15px;
+    font-size: 0.85rem;
+  }
+
+  /* AR Tutorial Overlay Adjustments */
+  .ar-tutorial-overlay {
+    width: 90%;
+    max-width: none;
+    padding: 15px;
+    transform: translate(-50%, -50%); /* Ensure it stays centered */
+  }
+
+  .ar-hands-container {
+    flex-direction: column;
+    gap: 15px;
+  }
+
+  .ar-hand-card {
+    width: 100px;
+    height: 100px;
+  }
+
+  .ar-step-strip {
+    flex-direction: column;
+    gap: 15px;
+  }
+
+  .ar-step {
+    align-items: flex-start;
+  }
 }
