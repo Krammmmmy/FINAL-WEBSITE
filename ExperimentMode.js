@@ -230,4 +230,4 @@ document.getElementById("combine-btn").addEventListener("click", async () => {
         dropZone.innerHTML = "DROP ELEMENTS HERE";
       }, 1200);
   }
-});
+}); 
