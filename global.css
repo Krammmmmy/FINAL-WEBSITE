@@ -1,0 +1,55 @@
+
+/* --- AR CAMERA & CURSOR STYLES --- */
+.input_video {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  object-fit: cover;
+  z-index: -5;
+  transform: scaleX(-1); /* Mirrors the camera like a normal webcam */
+  opacity: 0.4; /* Dims the real world so the neon holograms pop */
+}
+
+/* --- DUAL AR CURSORS --- */
+.hand-cursor {
+  position: fixed;
+  width: 25px;
+  height: 25px;
+  border-radius: 50%;
+  pointer-events: none; /* Crucial: ensures it doesn't block clicks */
+  z-index: 9999;
+  transform: translate(-50%, -50%);
+  transition: width 0.1s, height 0.1s, background-color 0.1s;
+  display: none; /* Hidden until hands are detected */
+}
+
+/* Primary Hand (Pointing & Rotation) */
+#hand-cursor-1 {
+  border: 2px solid var(--neon-cyan);
+  background: rgba(0, 242, 255, 0.3);
+  box-shadow: 0 0 15px var(--neon-cyan);
+}
+
+#hand-cursor-1.pinching {
+  width: 15px;
+  height: 15px;
+  background-color: var(--neon-cyan);
+  box-shadow: 0 0 30px #fff;
+}
+
+/* Secondary Hand (Menu & Mode Selection) */
+#hand-cursor-2 {
+  border: 2px solid #ff00ff; /* Neon Magenta */
+  background: rgba(255, 0, 255, 0.3);
+  box-shadow: 0 0 15px #ff00ff;
+}
+
+#hand-cursor-2.pinching {
+  width: 15px;
+  height: 15px;
+  background-color: #ff00ff;
+  box-shadow: 0 0 30px #fff;
+}
+
