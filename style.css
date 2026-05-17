@@ -374,8 +374,8 @@ body::after {
 }
 
 #ar-modal {
-  width: min(1000px);
-  min-height: 680px;
+  width: min(900px);
+  min-height: 580px;
   background: rgba(4, 13, 26, 0.97);
   border: 1.5px solid rgba(0, 242, 255, 0.45);
   box-shadow: 0 0 60px rgba(0, 242, 255, 0.18), inset 0 0 40px rgba(0, 242, 255, 0.04);
@@ -546,7 +546,7 @@ body::after {
 
 .ar-hand-text {
   width: 100%;
-  font-size: 1.25rem;
+  font-size: 1rem;
   color: #a0c3d2;
   line-height: 1.8;
 }
@@ -625,7 +625,7 @@ body::after {
   display: flex;
   align-items: flex-start;
   gap: 0.5rem;
-  font-size: 1.25;
+  font-size: 1.2;
   color: #a0c3d2;
   line-height: 1.65;
 }
@@ -819,54 +819,54 @@ body::after {
   cursor: pointer;
   z-index: 10001; /* Higher than the overlay */
 }
+
+
 /* =========================================
-   MOBILE RESPONSIVENESS (style.css)
+   MOBILE RESPONSIVENESS
 ========================================= */
 @media screen and (max-width: 768px) {
-  /* Adjust Header */
-  header {
+  /* Controls UI Wrapping */
+  .controls {
     flex-direction: column;
-    gap: 15px;
     height: auto;
-    padding: 15px;
-    justify-content: center;
-  }
-
-  .nav-controls {
-    flex-wrap: wrap;
-    justify-content: center;
     gap: 10px;
+    padding: 10px;
+  }
+  
+  .controls-group {
+    padding: 0;
+    width: 100%;
   }
 
-  .camera-btn, .mode-btn {
-    padding: 10px 15px;
-    font-size: 0.85rem;
+  /* AR Modal Layout Adjustments */
+  .ar-hand-panel.left-hand {
+    border-right: none;
+    border-bottom: 1px solid rgba(0, 242, 255, 0.15);
   }
 
-  /* AR Tutorial Overlay Adjustments */
-  .ar-tutorial-overlay {
-    width: 90%;
-    max-width: none;
-    padding: 15px;
-    transform: translate(-50%, -50%); /* Ensure it stays centered */
+  .ar-step + .ar-step {
+    border-left: none;
+    border-top: 1px solid rgba(0, 242, 255, 0.1);
+    padding-left: 0;
+    padding-top: 0.6rem;
   }
 
-  .ar-hands-container {
-    flex-direction: column;
-    gap: 15px;
+  /* Card Sizing Refinements */
+  .element {
+    --w: calc(90vw / 18);
+    --h: calc(60vh / 10);
+  }
+  
+  /* Titles can get messy on extremely narrow grids, optionally hide or scale */
+  .element-title {
+    display: none;
   }
 
-  .ar-hand-card {
-    width: 100px;
-    height: 100px;
-  }
-
-  .ar-step-strip {
-    flex-direction: column;
-    gap: 15px;
-  }
-
-  .ar-step {
-    align-items: flex-start;
+  #tutorial-toggle {
+    bottom: 15px;
+    right: 15px;
+    width: 45px;
+    height: 45px;
+    font-size: 0.8rem;
   }
 }

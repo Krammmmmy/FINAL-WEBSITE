@@ -362,26 +362,6 @@ function mapRange(value, inMin, inMax, outMin, outMax) {
   return ((value - inMin) / (inMax - inMin)) * (outMax - outMin) + outMin;
 }
 
-// At the top of your script.js or inside your initialization function
-window.addEventListener('DOMContentLoaded', () => {
-  const tutorialOverlay = document.querySelector('.ar-tutorial-overlay'); // Adjust selector to your tutorial ID
-  const hasSeenTutorial = localStorage.getItem('holoTable_tutorial_seen');
-
-  if (hasSeenTutorial) {
-    // If they've seen it, hide it immediately without animation
-    tutorialOverlay.style.display = 'none';
-  } else {
-    // If it's their first time, let it show, then save the state when they close it
-    // Assuming you have a "Got it" or "Start" button
-    const closeBtn = document.querySelector('.ar-close-btn'); 
-    if (closeBtn) {
-      closeBtn.addEventListener('click', () => {
-        localStorage.setItem('holoTable_tutorial_seen', 'true');
-        tutorialOverlay.style.display = 'none';
-      });
-    }
-  }
-});
 
 
 // --- DUAL-HAND AR TRACKING LOGIC (AIM & FIRE SETUP) ---
@@ -608,19 +588,15 @@ function updateVisibility() {
   requestAnimationFrame(updateVisibility);
 }
 
-// Start the loop immediately
-updateVisibility();
 
 
 // =========================================
 // TUTORIAL SYSTEM (One-time show + Toggle)
 // =========================================
 const arOverlay = document.getElementById('ar-overlay');
-const tutorialOverlay = document.getElementById('ar-tutorial-overlay');
 const tutorialToggleBtn = document.getElementById('tutorial-toggle');
-const closeTutorialBtn = document.getElementById('close-tutorial');
 
-// Function to show AR overlay (main tutorial)
+// Function to show AR overlay (MOTION CONTROL SETUP)
 function showAROverlay() {
   arOverlay.style.display = 'flex';
 }
@@ -630,50 +606,35 @@ function hideAROverlay() {
   arOverlay.style.display = 'none';
 }
 
-// Function to show tutorial
-function showTutorial() {
-  tutorialOverlay.style.display = 'flex';
-  setTimeout(() => {
-    tutorialOverlay.style.opacity = '1';
-  }, 10);
-}
-
-// Function to hide tutorial
-function hideTutorial() {
-  tutorialOverlay.style.opacity = '0';
-  setTimeout(() => {
-    tutorialOverlay.style.display = 'none';
-  }, 500); // Matches CSS transition time
-}
-
 // 1. Check if user has seen tutorial before
 window.addEventListener('DOMContentLoaded', () => {
-  const hasSeenTutorial = localStorage.getItem('hasSeenHoloTutorial');
+  const hasSeenTutorial = localStorage.getItem('holoTable_tutorial_seen');
 
   if (!hasSeenTutorial) {
-    showTutorial();
+    showAROverlay();
     // Mark as seen so it doesn't auto-show next time
-    localStorage.setItem('hasSeenHoloTutorial', 'true');
+    localStorage.setItem('holoTable_tutorial_seen', 'true');
+  } else {
+    // Ensure it's hidden if they've already seen it
+    hideAROverlay();
   }
 });
 
 // 2. Manual Toggle (The "?" Button) — toggles the AR control guide overlay
 tutorialToggleBtn.addEventListener('click', () => {
-  if (arOverlay.style.display === 'none') {
-    // If hidden, show it
+  // getComputedStyle accurately reads the CSS state even on the first click
+  if (window.getComputedStyle(arOverlay).display === 'none') {
     showAROverlay();
   } else {
-    // If shown, hide it
     hideAROverlay();
   }
 });
 
-// 3. Close Button logic
-closeTutorialBtn.addEventListener('click', hideTutorial);
-
-// 4. Close on clicking outside the content box
-tutorialOverlay.addEventListener('click', (e) => {
-  if (e.target === tutorialOverlay) {
-    hideTutorial();
+// 3. Ensure the close button inside the modal works
+const arCloseBtn = document.querySelector('.ar-close-btn');
+if (arCloseBtn) {
+  arCloseBtn.addEventListener('click', hideAROverlay);
   }
-});
+
+  // Start the loop immediately
+  updateVisibility();

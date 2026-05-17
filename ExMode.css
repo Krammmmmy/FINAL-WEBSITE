@@ -12,13 +12,16 @@
 body {
   margin: 0;
   background: var(--bg-dark);
-  /* Adds a subtle holographic glow to the background */
   background-image: 
     radial-gradient(circle at 50% -20%, rgba(0, 242, 255, 0.15) 0%, transparent 50%),
     radial-gradient(circle at 50% 120%, rgba(255, 0, 255, 0.1) 0%, transparent 50%);
   color: var(--neon-cyan);
   font-family: 'Orbitron', sans-serif;
-  min-height: 100vh;
+  
+  /* Update these two lines */
+  height: 100vh; 
+  overflow: hidden; /* Prevents the whole screen from scrolling */
+  
   display: flex;
   flex-direction: column;
 }
@@ -65,7 +68,8 @@ body {
 .experiment-ui {
   display: flex;
   flex: 1;
-  height: calc(100vh - 70px);
+  min-height: 0; /* Allows flex children (like your element list) to scroll properly */
+  overflow: hidden; /* Keeps the UI bound to the screen */
 }
 
 /* --- LEFT PANEL: ELEMENTS --- */
@@ -146,13 +150,22 @@ body {
   align-items: center;
   justify-content: flex-start;
   position: relative;
+  
+  /* === NEW ADDITIONS === */
+  overflow-y: auto; 
+  min-height: 0; /* Prevents the right side from stretching the whole window */
 }
+
+/* Custom Scrollbar for the right panel */
+.reaction-zone::-webkit-scrollbar { width: 6px; }
+.reaction-zone::-webkit-scrollbar-track { background: transparent; }
+.reaction-zone::-webkit-scrollbar-thumb { background: rgba(0, 242, 255, 0.5); border-radius: 3px; }
 
 /* The Drop Zone ("The Reactor") */
 .drop-zone {
   width: 100%;
   max-width: 600px;
-  height: 280px;
+  height: 500px;
   background: radial-gradient(circle, rgba(255,0,255,0.05) 0%, rgba(0,0,0,0.4) 80%);
   border: 2px dashed rgba(255, 0, 255, 0.5);
   border-radius: 16px;
@@ -168,8 +181,16 @@ body {
   color: rgba(255, 0, 255, 0.6);
   font-size: 1.2rem;
   letter-spacing: 2px;
+  
+  /* === NEW ADDITIONS === */
+  overflow-y: auto; /* Adds a scrollbar when full */
+  align-content: flex-start; /* Prevents elements from spreading out vertically */
 }
 
+/* Custom Scrollbar for the Drop Zone */
+.drop-zone::-webkit-scrollbar { width: 6px; }
+.drop-zone::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); border-radius: 8px; }
+.drop-zone::-webkit-scrollbar-thumb { background: var(--neon-magenta); border-radius: 3px; }
 /* Active state when hovering a dragged item */
 .drop-zone.active-drag {
   border-color: var(--neon-green);
@@ -206,6 +227,7 @@ body {
 
 /* --- THE COMBINE BUTTON --- */
 #combine-btn {
+  display: flex;
   background: rgba(0, 242, 255, 0.1);
   color: var(--neon-cyan);
   border: 2px solid var(--neon-cyan);
@@ -213,6 +235,8 @@ body {
   font-size: 1.2rem;
   font-family: 'Orbitron', sans-serif;
   font-weight: bold;
+   justify-content: center;
+  align-items: center;
   letter-spacing: 3px;
   border-radius: 30px;
   cursor: pointer;
@@ -242,10 +266,15 @@ body {
   border-left: 4px solid var(--neon-cyan);
   border-radius: 0 8px 8px 0;
   padding: 25px;
-  min-height: 120px;
   box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-  font-family: 'Courier New', Courier, monospace; /* Terminal vibe */
+  font-family: 'Courier New', Courier, monospace; 
   color: #e0f7ff;
+  box-sizing: border-box;
+
+  /* === THE FIX: Force the box to stack and stretch === */
+  display: flex;
+  flex-direction: column;
+  height: auto; 
 }
 
 .reaction-result h2 {
@@ -274,23 +303,24 @@ body {
    2D COMPOUND STRUCTURE STYLES
 ========================================= */
 .structure-container {
+  width: 100%;
+  margin-top: 20px;
   display: flex;
   justify-content: center;
   align-items: center;
-  margin-top: 15px;
-  padding: 10px;
-  background: rgba(0, 242, 255, 0.05);
-  border: 1px dashed var(--glass-border);
-  border-radius: 8px;
+  flex: 1; /* Ensures the container claims space inside the flex box */
 }
 
 .compound-structure-2d {
+  width: 100%;
   max-width: 100%;
   height: auto;
-  max-height: 100%; /* Keeps it from taking over the screen on mobile */
-  object-fit: contain;
+  max-height: 130px; 
+  object-fit: contain; 
   
-  /* Turns black lines on white bg -> glowing white/cyan lines on dark bg */
+  /* === THE FIX: Removes phantom bottom spacing === */
+  display: flexbox; 
+  
   filter: invert(1) hue-rotate(180deg) brightness(1.5) drop-shadow(0 0 5px rgba(0, 242, 255, 0.5));
   transition: transform 0.3s ease;
 }
@@ -298,6 +328,58 @@ body {
 .compound-structure-2d:hover {
   transform: scale(1.05);
 }
+
+/* =========================================
+   SELECTED ELEMENTS (IN THE DROP ZONE)
+========================================= */
+.selected-element {
+  width: 70px; /* Increased size */
+  height: 70px; /* Increased size */
+  border-radius: 50%; /* Makes it a perfect circle */
+  border: 2px solid var(--neon-cyan); /* Adds the circle outline */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem; /* Make the element symbol larger */
+  font-weight: bold;
+  background: rgba(0, 242, 255, 0.05); /* Slight inner glow */
+  box-shadow: 0 0 15px rgba(0, 242, 255, 0.2), inset 0 0 10px rgba(0, 242, 255, 0.1);
+  margin: 10px; /* Spacing between selected elements */
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.selected-element:hover {
+  background: rgba(255, 0, 106, 0.2); /* Changes color when hovering to remove */
+  border-color: #ff0055;
+  box-shadow: 0 0 15px rgba(255, 0, 85, 0.4);
+}
+
+/* =========================================
+   ELEMENT QUANTITY BADGE (UPDATED)
+========================================= */
+.element-badge {
+  position: absolute;
+  /* Push the badge slightly outside the new circular border */
+  top: -5px; 
+  right: -5px; 
+  background: var(--bg-dark);
+  color: var(--neon-magenta); 
+  border: 2px solid var(--neon-magenta); /* Slightly thicker border */
+  border-radius: 50%;
+  width: 28px; /* Slightly larger badge */
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.9rem;
+  font-weight: bold;
+  font-family: 'Orbitron', sans-serif;
+  box-shadow: 0 0 8px rgba(255, 0, 255, 0.6); 
+  z-index: 10;
+  pointer-events: none; 
+}
+
 
 /* =========================================
    MOBILE RESPONSIVENESS (ExMode.css)

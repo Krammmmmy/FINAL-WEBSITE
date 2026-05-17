@@ -42,7 +42,23 @@
       </button>
 
       <div class="reaction-result" id="reaction-result">
-        Waiting for experiment...
+        
+        <div id="reaction-status">
+          <p>> SYSTEM IDLE...</p>
+          <p>> AWAITING ELEMENT INPUT</p>
+        </div>
+
+        <div id="reaction-success-ui" style="display: none;">
+          <h2 style="color: var(--neon-green);">REACTION SUCCESSFUL</h2>
+          <h3 id="compound-name"></h3>
+          <p>Formula: <span id="compound-formula"></span></p>
+          
+          <div class="structure-container">
+            <img id="compound-image" src="" alt="2D Structure" class="compound-structure-2d" />
+            <p id="image-error" style="display: none;">Structure not available</p>
+          </div>
+        </div>
+
       </div>
 
     </section>

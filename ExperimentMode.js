@@ -61,20 +61,20 @@ async function checkPubChem(elementsArray) {
     const props = data.PropertyTable.Properties[0];
     
     return {
-      success: true,         // Added so the combine button knows it worked!
-      cid: props.CID,        // We need this ID to get the 2D image
+      success: true,         
+      cid: props.CID,        
       name: props.IUPACName || "Unknown Compound",
       formula: props.MolecularFormula || formula
     };
   } catch (err) {
     return {
-      success: false,        // Tells the combine button the reaction failed
+      success: false,        
       formula: formula
     };
   }
 }
 
-// Render selected elements in drop zone
+// Render selected elements in drop zone with number badges
 function renderSelected(){
   dropZone.innerHTML = "";
 
@@ -83,39 +83,37 @@ function renderSelected(){
     return;
   }
 
-  // We add 'index' here so we know exactly WHICH atom to remove
-  selected.forEach((symbol, index) => {
-    const atom = document.createElement("div");
-    atom.className = "selected-atom";
-    atom.textContent = symbol;
-    
-    // Add visual cues so the user knows it's clickable
-    atom.style.cursor = "pointer";
-    atom.title = "Click to remove"; 
-
-    // The Remove Function!
-    atom.addEventListener("click", () => {
-      selected.splice(index, 1); // Removes this specific element from the array
-      renderSelected();          // Redraws the drop zone instantly
-    });
-
-    dropZone.appendChild(atom);
+  // Count occurrences of each selected element
+  const elementCounts = {};
+  selected.forEach(el => {
+    elementCounts[el] = (elementCounts[el] || 0) + 1;
   });
-}
 
-// Animate the reaction
-function animateReaction(result){
-  dropZone.classList.add("reacting");
+  // Render each unique element once with a number badge
+  for (const [el, count] of Object.entries(elementCounts)) {
+    const div = document.createElement("div");
+    div.className = "element selected-element"; // Ensure this matches your CSS class
+    div.textContent = el;
+    div.style.position = "relative"; 
 
-  setTimeout(() => {
-    dropZone.innerHTML = `
-      <div class="molecule">
-        ${result}
-      </div>
-    `;
+    // Add a badge if there is more than 1 of this element
+    if (count > 1) {
+      const badge = document.createElement("span");
+      badge.className = "element-badge";
+      badge.textContent = count;
+      div.appendChild(badge);
+    }
 
-    dropZone.classList.remove("reacting");
-  }, 1200);
+    div.onclick = () => {
+      const index = selected.indexOf(el);
+      if (index > -1) {
+        selected.splice(index, 1);
+        renderSelected();
+      }
+    };
+
+    dropZone.appendChild(div);
+  }
 }
 
 // Create element cards
@@ -162,56 +160,74 @@ dropZone.addEventListener("drop", (e) => {
 // Combine button handler
 document.getElementById("combine-btn").addEventListener("click", async () => {
   if (selected.length < 2) {
-    resultBox.innerHTML = `
-      <h2>NOT ENOUGH ELEMENTS</h2>
-      <p>Please select at least 2 elements.</p>
+    document.getElementById("reaction-success-ui").style.display = "none";
+    const statusDiv = document.getElementById("reaction-status");
+    statusDiv.style.display = "block";
+    statusDiv.innerHTML = `
+      <h2 style="color: var(--neon-magenta);">NOT ENOUGH ELEMENTS</h2>
+      <p>> Please select at least 2 elements.</p>
     `;
     return;
   }
 
-  // Show a loading state while we wait for the API
-  resultBox.innerHTML = `
+  // Show a loading state
+  document.getElementById("reaction-success-ui").style.display = "none";
+  const statusDiv = document.getElementById("reaction-status");
+  statusDiv.style.display = "block";
+  statusDiv.innerHTML = `
     <h2>ANALYZING...</h2>
-    <p>Querying the database...</p>
+    <p>> Querying the database...</p>
   `;
 
-  // Store the elements to check and clear the drop zone immediately
   const elementsToCheck = [...selected];
   selected = [];
   renderSelected();
 
-  // Call the PubChem API
   const reaction = await checkPubChem(elementsToCheck);
 
-  // Now 'reaction.success' will properly trigger!
   if (reaction && reaction.success) { 
       const cid = reaction.cid; 
       const imageUrl = `https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/cid/${cid}/PNG?record_type=2d&image_size=large`;
 
-      // Animate the result in
       dropZone.classList.add("reacting");
 
       setTimeout(() => {
         dropZone.innerHTML = `<div class="molecule">${reaction.formula}</div>`;
         dropZone.classList.remove("reacting");
 
-        // Display the 2D structure in the terminal
-        resultBox.innerHTML = `
-          <h2 style="color: var(--neon-green);">REACTION SUCCESSFUL</h2>
-          <h3>${reaction.name.toUpperCase()}</h3>
-          <p>Formula: ${reaction.formula}</p>
-          <div class="structure-container">
-            <img src="${imageUrl}" alt="2D Structure of ${reaction.name}" class="compound-structure-2d" onerror="this.style.display='none'; this.parentElement.innerHTML+='<p>Structure not available</p>';" />
-          </div>
-        `;
+        // Toggle UI
+        document.getElementById("reaction-status").style.display = "none";
+        document.getElementById("reaction-success-ui").style.display = "block";
+
+        // Inject Data
+        document.getElementById("compound-name").textContent = reaction.name.toUpperCase();
+        document.getElementById("compound-formula").textContent = reaction.formula;
+        
+        // Handle Image
+        const imgElement = document.getElementById("compound-image");
+        const errorElement = document.getElementById("image-error");
+        
+        imgElement.src = imageUrl;
+        imgElement.alt = `2D Structure of ${reaction.name}`;
+        imgElement.style.display = "block"; 
+        errorElement.style.display = "none";
+
+        imgElement.onerror = () => {
+            imgElement.style.display = 'none';
+            errorElement.style.display = 'block';
+        };
       }, 1200);
 
   } else {
-      // If the API couldn't find a matching compound for the formula
-      resultBox.innerHTML = `
-        <h2 style="color: var(--neon-magenta);">REACTION FAILED</h2>
-        <p>No known compound found for the formula ${reaction.formula}.</p>
-      `;
-      dropZone.innerHTML = "DROP ELEMENTS HERE";
+      setTimeout(() => {
+        document.getElementById("reaction-success-ui").style.display = "none";
+        const statusDiv = document.getElementById("reaction-status");
+        statusDiv.style.display = "block";
+        statusDiv.innerHTML = `
+          <h2 style="color: var(--neon-magenta);">REACTION FAILED</h2>
+          <p>> No known compound found for ${reaction.formula}.</p>
+        `;
+        dropZone.innerHTML = "DROP ELEMENTS HERE";
+      }, 1200);
   }
 });
