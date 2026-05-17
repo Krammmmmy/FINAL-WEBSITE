@@ -11,16 +11,37 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700&family=Roboto+Mono:wght@300;400;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="./WikiStyle.css">
+    <link rel="stylesheet" href="global.css">
 
+
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
 </head>
 
 <body>
+  <video class="input_video" autoplay playsinline></video>
+
+  <div id="hand-cursor-1" class="hand-cursor"></div>
+  <div id="hand-cursor-2" class="hand-cursor"></div>
+
   <div class="wiki-root">
 
     <!-- Top Nav -->
     <nav class="wiki-nav">
       <span class="nav-brand">◈ HOLOTABLE :: ELEMENT DATABASE</span>
-      <a href="index.html" class="back-btn">&#x2190; RETURN TO TABLE</a>
+      <div class="controls-group camera-group">
+      <button id="camera-toggle" class="camera-btn" title="Toggle Motion Control" style="display: none;">
+        <span class="cam-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M23 7l-7 5 7 5V7z" />
+            <rect x="1" y="5" width="15" height="14" rx="2" ry="2" />
+          </svg>
+        </span>
+        <span class="cam-label">Camera&nbsp;OFF</span>
+        <span class="cam-status-dot"></span>
+      </button>
+    </div>
+      <a href="home.html" class="back-btn">&#x2190; RETURN TO TABLE</a>
     </nav>
 
     <!-- Hero Header (populated by JS) -->
@@ -113,7 +134,7 @@
 
     </div><!-- /wiki-content -->
   </div><!-- /wiki-root -->
-
+<script src="./ar-core.js"></script>
   <script type="module">
     // ============================================================
     // IMPORT MODULES
