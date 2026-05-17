@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>HoloTable</title>
+  <link rel="icon" type="image/svg+xml"
+    href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='28' fill='none' stroke='%2300f2ff' stroke-width='4' stroke-dasharray='10 6'/%3E%3Ccircle cx='32' cy='32' r='12' fill='%2300f2ff'/%3E%3Cline x1='32' y1='4' x2='32' y2='12' stroke='%23ff00ff' stroke-width='4'/%3E%3Cline x1='32' y1='52' x2='32' y2='60' stroke='%23ff00ff' stroke-width='4'/%3E%3Cline x1='4' y1='32' x2='12' y2='32' stroke='%23ff00ff' stroke-width='4'/%3E%3Cline x1='52' y1='32' x2='60' y2='32' stroke='%23ff00ff' stroke-width='4'/%3E%3C/svg%3E">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700&family=Roboto+Mono:wght@300;400;700&display=swap"
+    rel="stylesheet">
+
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+  <link rel="stylesheet" href="./style.css">
+</head>
+
+<body>
+  <!-- Only one video element needed -->
+  <video class="input_video" autoplay playsinline></video>
+
+  <div id="hand-cursor-1" class="hand-cursor"></div>
+  <div id="hand-cursor-2" class="hand-cursor"></div>
+
+  <div class="controls">
+    <div class="controls-group display br">
+      <button class="is-active toggle" id="table">table</button>
+      <button class="toggle" id="sphere">sphere</button>
+      <button class="toggle" id="helix">helix</button>
+      <button class="toggle" id="grid">grid</button>
+    </div>
+
+    <!-- Camera Toggle Button -->
+    <div class="controls-group camera-group">
+      <button id="camera-toggle" class="camera-btn" title="Toggle Motion Control">
+        <span class="cam-icon">
+          <!-- Camera SVG icon -->
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+            stroke-linecap="round" stroke-linejoin="round">
+            <path d="M23 7l-7 5 7 5V7z" />
+            <rect x="1" y="5" width="15" height="14" rx="2" ry="2" />
+          </svg>
+        </span>
+        <span class="cam-label">Camera&nbsp;OFF</span>
+        <span class="cam-status-dot"></span>
+      </button>
+
+      <div class="controls-group experiment-group">
+        <button class="experiment-btn" onclick="window.location.href='ExperimentMode.html'">
+          ⚗ EXPERIMENT MODE
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div id="scene">
+    <div id="scene-content" data-layout="table"></div>
+  </div>
+
+  <!-- Element card template — now includes the Learn More button -->
+  <template id="element">
+    <div class="element" data-color="0" role="button" tabindex="0">
+      <div class="element-number"></div>
+      <div class="element-symbol"></div>
+      <div class="element-title"></div>
+      <div class="element-description"></div>
+      <a class="learn-more-btn" href="Element Wiki.html"
+        onclick="this.href='Element Wiki.html?element=' + this.parentElement.dataset.elementName + '&symbol=' + this.parentElement.dataset.elementSymbol + '&number=' + this.parentElement.dataset.atomicNumber">
+        <span class="lm-chevron">&#x276F;</span> LEARN MORE
+      </a>
+    </div>
+  </template>
+
+  
+  <div id="ar-overlay" style="display: none;">
+    <div id="ar-modal">
+
+      <!-- Corner brackets -->
+      <span class="ar-corner top-left"></span>
+      <span class="ar-corner top-right"></span>
+      <span class="ar-corner bottom-left"></span>
+      <span class="ar-corner bottom-right"></span>
+
+      <!-- Scanline overlay -->
+      <span class="ar-scanline"></span>
+
+      <!-- HEADER -->
+      <div class="ar-header">
+        <div>
+          <div class="ar-header-label">◈ HOLOTABLE :: AR CONTROL GUIDE</div>
+          <div class="ar-header-title">MOTION CONTROL SETUP</div>
+        </div>
+        <button class="ar-close-btn" onclick="document.getElementById('ar-overlay').style.display='none'">&#x2715;
+          CLOSE</button>
+      </div>
+
+      <!-- STATUS BAR -->
+      <div class="ar-status-bar">
+        <span class="ar-status-indicator"></span>
+        <span>DUAL-HAND TRACKING ACTIVE</span><span>|</span><span>REQUIRES CAMERA ACCESS</span>
+      </div>
+
+      <!-- TWO HAND COLUMNS: LEFT hand on left, RIGHT hand on right -->
+      <div class="ar-controls-grid">
+
+        <!-- LEFT HAND — SELECT (pink / pinch.gif) -->
+        <div class="ar-hand-panel left-hand">
+          <div class="ar-hand-title-row">
+            <span class="ar-hand-dot left-dot"></span>
+            <span class="ar-hand-title">Left Hand — SELECT</span>
+          </div>
+          <div class="ar-hand-text">
+            The <span class="ar-highlight-magenta">pink cursor</span> tracks your left hand.<br><br>
+            <span class="ar-highlight-magenta">Pinch</span> your left <span class="ar-highlight-white">thumb + index
+              finger</span> together to <span class="ar-highlight-white">click</span> on whatever the <span
+              class="ar-highlight-cyan">blue cursor</span> is aiming at.
+          </div>
+          <div class="ar-hand-card pink-card">
+            <span class="ar-card-corner top-left"></span>
+            <span class="ar-card-corner top-right"></span>
+            <span class="ar-card-corner bottom-left"></span>
+            <span class="ar-card-corner bottom-right"></span>
+            <img class="hand-gif pinch" src="pinch.gif" alt="Pinch gesture — thumb meets index finger to click">
+          </div>
+          <div class="ar-hand-caption">PINCH = CLICK</div>
+        </div>
+
+        <!-- RIGHT HAND — AIM (cyan / point.gif) -->
+        <div class="ar-hand-panel right-hand">
+          <div class="ar-hand-title-row">
+            <span class="ar-hand-dot right-dot"></span>
+            <span class="ar-hand-title">Right Hand — AIM</span>
+          </div>
+          <div class="ar-hand-text">
+            Point your <span class="ar-highlight-cyan">right index finger</span> at the screen. The <span
+              class="ar-highlight-cyan">blue cursor</span> tracks its tip.<br><br>
+            Moving your hand <span class="ar-highlight-white">rotates</span> the 3D scene and hovers over element cards.
+          </div>
+          <div class="ar-hand-card cyan-card">
+            <span class="ar-card-corner top-left"></span>
+            <span class="ar-card-corner top-right"></span>
+            <span class="ar-card-corner bottom-left"></span>
+            <span class="ar-card-corner bottom-right"></span>
+            <img class="hand-gif point" src="point.gif" alt="Pointing gesture — index finger extended upward">
+          </div>
+          <div class="ar-hand-caption cyan-caption">INDEX TIP = CURSOR</div>
+        </div>
+
+      </div>
+
+      <!-- STEP STRIP -->
+      <div class="ar-step-strip">
+        <div class="ar-step">
+          <span class="ar-step-number">01</span>
+          <span>Click <span class="ar-highlight-white">Camera OFF</span> to enable the camera and start hand
+            tracking.</span>
+        </div>
+        <div class="ar-step">
+          <span class="ar-step-number">02</span>
+          <span>Raise your <span class="ar-highlight-cyan">right hand</span> — move it to aim and rotate the holographic
+            table.</span>
+        </div>
+        <div class="ar-step">
+          <span class="ar-step-number">03</span>
+          <span>Aim, then <span class="ar-highlight-magenta">pinch left</span> thumb + index to select an element
+            card.</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+<button id="tutorial-toggle" title="Show Tutorial">?</button>
+
+  <script src="./ar-core.js"></script>
+  <script type="module" src="./script.js"></script>
+  
+</body>
+
+</html>
