@@ -1,29 +1,53 @@
-/* ===== HOLOTABLE EXPERIMENT UI - PREMIUM UPGRADE ===== */
+/* ===== HOLOTABLE EXPERIMENT UI - MATCHED TO MAIN STYLE ===== */
 
 :root {
   --neon-cyan: #00f2ff;
+  --neon-blue: #0062ff;
   --neon-magenta: #ff00ff;
-  --neon-green: #00ff00;
-  --bg-dark: #050816;
-  --glass-bg: rgba(10, 25, 41, 0.6);
-  --glass-border: rgba(0, 242, 255, 0.2);
+  --glass-bg: rgba(10, 25, 41, 0.75);
+  --border-glow: rgba(0, 242, 255, 0.3);
+  --padding: 1rem;
+  --bg-dark: #020617;
+  --header-height: 5rem;
+  --theme: var(--neon-cyan); /* Default theme color */
 }
 
+/* Ensure the body is transparent so the grid shows through */
 body {
   margin: 0;
-  background: var(--bg-dark);
-  background-image: 
-    radial-gradient(circle at 50% -20%, rgba(0, 242, 255, 0.15) 0%, transparent 50%),
-    radial-gradient(circle at 50% 120%, rgba(255, 0, 255, 0.1) 0%, transparent 50%);
-  color: var(--neon-cyan);
-  font-family: 'Orbitron', sans-serif;
-  
-  /* Update these two lines */
-  height: 100vh; 
-  overflow: hidden; /* Prevents the whole screen from scrolling */
-  
+  background-color: #000;
   display: flex;
   flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+  font-family: 'Orbitron', 'Segoe UI', 'Roboto Mono', monospace;
+  color: #fff;
+}
+
+/* Subtle grid overlaid on the background */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background-image: 
+    linear-gradient(rgba(0, 242, 255, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 242, 255, 0.05) 1px, transparent 1px);
+  background-size: 40px 40px;
+  z-index: -4;
+  pointer-events: none;
+}
+
+/* Sci-fi vignette and scanline effect */
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background: 
+    radial-gradient(circle, transparent 30%, rgba(0,0,0,0.8) 150%),
+    linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%);
+  background-size: 100% 100%, 100% 4px;
+  pointer-events: none;
+  z-index: -3; /* Placed behind UI */
 }
 
 /* --- NAVIGATION BAR --- */
@@ -31,64 +55,78 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 15px 30px;
-  background: rgba(5, 8, 22, 0.8);
-  backdrop-filter: blur(10px);
-  border-bottom: 1px solid var(--glass-border);
-  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
+  padding: 0 2rem;
+  height: var(--header-height);
+  background: linear-gradient(to bottom, rgba(2, 6, 23, 0.9), transparent);
+  border-bottom: 1px solid rgba(0, 242, 255, 0.2);
   z-index: 10;
 }
 
 .top-bar h1 {
   margin: 0;
   font-size: 1.5rem;
+  font-family: 'Orbitron', monospace;
+  font-weight: 700;
   letter-spacing: 2px;
-  text-shadow: 0 0 10px rgba(0, 242, 255, 0.5);
-}
-
-.top-bar button {
-  background: transparent;
-  color: var(--neon-cyan);
-  border: 1px solid var(--neon-cyan);
-  padding: 8px 16px;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  font-family: 'Orbitron', sans-serif;
+  color: #00f2ff;
+  text-shadow: 0 0 14px rgba(0, 242, 255, 0.55);
   text-transform: uppercase;
 }
 
+.top-bar button {
+  background: rgba(0, 98, 255, 0.05);
+  border: 1px solid var(--neon-blue);
+  color: var(--neon-blue);
+  padding: 0.5rem 1.5rem;
+  text-transform: uppercase;
+  font-family: 'Roboto Mono', monospace;
+  font-size: 0.8rem;
+  letter-spacing: 2px;
+  cursor: pointer;
+  /* Beveled corner tech shape */
+  clip-path: polygon(10% 0, 100% 0, 90% 100%, 0 100%);
+  transition: all 0.3s ease;
+  backdrop-filter: blur(4px);
+}
+
 .top-bar button:hover {
-  background: var(--neon-cyan);
-  color: var(--bg-dark);
-  box-shadow: 0 0 15px var(--neon-cyan);
+  background: rgba(0, 98, 255, 0.22);
+  color: #fff;
+  box-shadow: 0 0 10px rgba(0, 98, 255, 0.5);
 }
 
 /* --- MAIN LAYOUT --- */
 .experiment-ui {
   display: flex;
   flex: 1;
-  min-height: 0; /* Allows flex children (like your element list) to scroll properly */
-  overflow: hidden; /* Keeps the UI bound to the screen */
+  min-height: 0;
+  overflow: hidden;
+  position: relative;
+  z-index: 1;
 }
 
 /* --- LEFT PANEL: ELEMENTS --- */
 .elements-panel {
   width: 35%;
-  background: var(--glass-bg);
-  backdrop-filter: blur(12px);
-  border-right: 1px solid var(--glass-border);
+  background: rgba(4, 13, 26, 0.6);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border-right: 1px solid rgba(0, 242, 255, 0.2);
   padding: 25px;
   display: flex;
   flex-direction: column;
 }
 
 .elements-panel h2 {
-  margin-top: 0;
-  font-size: 1.2rem;
-  letter-spacing: 1px;
-  border-bottom: 1px solid var(--glass-border);
+  font-family: 'Orbitron', monospace;
+  font-size: 1rem;
+  letter-spacing: 4px;
+  color: #00f2ff;
+  opacity: 0.85;
+  text-transform: uppercase;
+  border-bottom: 1px solid rgba(0, 242, 255, 0.2);
   padding-bottom: 15px;
+  margin-top: 0;
   margin-bottom: 20px;
 }
 
@@ -97,44 +135,44 @@ body {
   flex-wrap: wrap;
   gap: 12px;
   overflow-y: auto;
-  padding-right: 10px; /* Space for scrollbar */
+  padding-right: 10px;
   padding-bottom: 20px;
-  
-  /* ADD THESE TWO LINES */
   flex: 1; 
   align-content: flex-start;
-  min-height: 0; /* THIS IS THE MAGIC FIX */
+  min-height: 0;
 }
 
-/* Custom Scrollbar for the elements list */
+/* Custom Scrollbar for elements list */
 .element-list::-webkit-scrollbar { width: 6px; }
 .element-list::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); }
-.element-list::-webkit-scrollbar-thumb { background: var(--neon-cyan); border-radius: 3px; }
+.element-list::-webkit-scrollbar-thumb { background: var(--neon-cyan); border-radius: 0px; }
 
+/* Element cards styled like the periodic table tiles */
 .element-card {
   width: 50px;
   height: 50px;
-  background: rgba(0, 242, 255, 0.05);
-  border: 1px solid var(--glass-border);
-  border-radius: 8px;
+  background: var(--glass-bg);
+  backdrop-filter: blur(8px);
+  border: 2px solid var(--theme);
+  border-radius: 4px;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 1.4rem;
-  font-weight: bold;
+  font-weight: 300;
+  color: var(--theme);
+  text-shadow: 0 0 10px var(--theme);
   cursor: grab;
-  transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
-  box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.5), inset 0 0 10px var(--theme);
+  transition: border-color 0.3s, box-shadow 0.3s, transform 0.3s;
 }
 
 .element-card:hover {
-  background: rgba(0, 242, 255, 0.2);
-  border-color: var(--neon-cyan);
+  border-color: var(--theme);
+  background-color: rgba(0, 0, 0, 0.85);
+  box-shadow: 0 0 30px var(--theme), inset 0 0 20px var(--theme);
   transform: translateY(-3px) scale(1.05);
-  box-shadow: 0 5px 15px rgba(0, 242, 255, 0.4);
 }
-
-
 
 .element-card:active {
   cursor: grabbing;
@@ -150,25 +188,22 @@ body {
   align-items: center;
   justify-content: flex-start;
   position: relative;
-  
-  /* === NEW ADDITIONS === */
   overflow-y: auto; 
-  min-height: 0; /* Prevents the right side from stretching the whole window */
+  min-height: 0; 
 }
 
-/* Custom Scrollbar for the right panel */
 .reaction-zone::-webkit-scrollbar { width: 6px; }
 .reaction-zone::-webkit-scrollbar-track { background: transparent; }
-.reaction-zone::-webkit-scrollbar-thumb { background: rgba(0, 242, 255, 0.5); border-radius: 3px; }
+.reaction-zone::-webkit-scrollbar-thumb { background: rgba(0, 242, 255, 0.5); }
 
 /* The Drop Zone ("The Reactor") */
 .drop-zone {
   width: 100%;
   max-width: 600px;
   height: 500px;
-  background: radial-gradient(circle, rgba(255,0,255,0.05) 0%, rgba(0,0,0,0.4) 80%);
-  border: 2px dashed rgba(255, 0, 255, 0.5);
-  border-radius: 16px;
+  background: rgba(4, 13, 26, 0.4);
+  border: 1.5px dashed rgba(0, 242, 255, 0.45);
+  border-radius: 4px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -177,116 +212,143 @@ body {
   gap: 20px;
   padding: 20px;
   transition: all 0.3s ease;
-  box-shadow: inset 0 0 30px rgba(0,0,0,0.5);
-  color: rgba(255, 0, 255, 0.6);
+  box-shadow: 0 0 60px rgba(0, 242, 255, 0.05), inset 0 0 40px rgba(0, 242, 255, 0.04);
+  color: rgba(0, 242, 255, 0.6);
   font-size: 1.2rem;
   letter-spacing: 2px;
-  
-  /* === NEW ADDITIONS === */
-  overflow-y: auto; /* Adds a scrollbar when full */
-  align-content: flex-start; /* Prevents elements from spreading out vertically */
+  font-family: 'Orbitron', monospace;
+  text-transform: uppercase;
+  overflow-y: auto; 
+  align-content: flex-start; 
 }
 
-/* Custom Scrollbar for the Drop Zone */
 .drop-zone::-webkit-scrollbar { width: 6px; }
-.drop-zone::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); border-radius: 8px; }
-.drop-zone::-webkit-scrollbar-thumb { background: var(--neon-magenta); border-radius: 3px; }
-/* Active state when hovering a dragged item */
+.drop-zone::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); }
+.drop-zone::-webkit-scrollbar-thumb { background: var(--neon-cyan); }
+
 .drop-zone.active-drag {
-  border-color: var(--neon-green);
-  background: radial-gradient(circle, rgba(0,255,0,0.1) 0%, rgba(0,0,0,0.4) 80%);
-  box-shadow: inset 0 0 40px rgba(0, 255, 0, 0.2);
-}
-
-.selected-atom {
-  width: 80px;
-  height: 80px;
+  border-color: var(--neon-cyan);
   background: rgba(0, 242, 255, 0.1);
-  border: 2px solid var(--neon-cyan);
-  border-radius: 50%;
+  box-shadow: inset 0 0 40px rgba(0, 242, 255, 0.2);
+}
+
+/* --- SELECTED ELEMENTS (IN THE DROP ZONE) --- */
+.selected-element {
+  width: 70px;
+  height: 70px;
+  background: var(--glass-bg);
+  backdrop-filter: blur(8px);
+  border: 2px solid var(--theme);
+  border-radius: 4px;
   display: flex;
-  justify-content: center;
   align-items: center;
-  font-size: 1.8rem;
-  font-weight: bold;
-  box-shadow: 0 0 20px rgba(0, 242, 255, 0.4), inset 0 0 15px rgba(0, 242, 255, 0.2);
-  animation: floatAtom 3s ease-in-out infinite alternate;
+  justify-content: center;
+  font-size: 2rem;
+  font-weight: 300;
+  color: var(--theme);
+  text-shadow: 0 0 10px var(--theme);
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.5), inset 0 0 10px var(--theme);
+  margin: 10px; 
+  cursor: pointer;
   transition: all 0.2s ease;
+  position: relative;
 }
 
-.selected-atom:hover {
-  border-color: var(--neon-magenta);
-  box-shadow: 0 0 20px rgba(255, 0, 255, 0.6);
-  transform: scale(1.1);
+.selected-element:hover {
+  background-color: rgba(0, 0, 0, 0.85);
+  border-color: #ff0055;
+  color: #ff0055;
+  text-shadow: 0 0 10px #ff0055;
+  box-shadow: 0 0 30px #ff0055, inset 0 0 20px #ff0055;
 }
 
-@keyframes floatAtom {
-  0% { transform: translateY(0px); }
-  100% { transform: translateY(-10px); }
+/* --- ELEMENT QUANTITY BADGE --- */
+.element-badge {
+  position: absolute;
+  top: -8px; 
+  right: -8px; 
+  background: var(--bg-dark);
+  color: var(--neon-cyan); 
+  border: 1px solid var(--neon-cyan);
+  /* Tech angled borders */
+  clip-path: polygon(20% 0, 100% 0, 100% 80%, 80% 100%, 0 100%, 0 20%);
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  font-weight: bold;
+  font-family: 'Roboto Mono', monospace;
+  box-shadow: 0 0 8px rgba(0, 242, 255, 0.6); 
+  z-index: 10;
+  pointer-events: none; 
 }
 
 /* --- THE COMBINE BUTTON --- */
 #combine-btn {
   display: flex;
-  background: rgba(0, 242, 255, 0.1);
-  color: var(--neon-cyan);
-  border: 2px solid var(--neon-cyan);
-  padding: 15px 50px;
-  font-size: 1.2rem;
-  font-family: 'Orbitron', sans-serif;
-  font-weight: bold;
-   justify-content: center;
   align-items: center;
-  letter-spacing: 3px;
-  border-radius: 30px;
-  cursor: pointer;
-  transition: all 0.3s ease;
+  justify-content: center;
   margin-bottom: 30px;
-  position: relative;
-  overflow: hidden;
+  padding: 0.6rem 2.5rem;
+  font-family: 'Roboto Mono', monospace;
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--bg-dark);
+  background: var(--neon-cyan);
+  border: none;
+  clip-path: polygon(8% 0%, 100% 0%, 92% 100%, 0% 100%);
+  cursor: pointer;
+  transition: background 0.2s, box-shadow 0.2s, transform 0.15s;
 }
 
 #combine-btn:hover {
-  background: var(--neon-cyan);
-  color: var(--bg-dark);
-  box-shadow: 0 0 25px var(--neon-cyan);
-  transform: scale(1.05);
+  background: #fff;
+  box-shadow: 0 0 20px var(--neon-cyan), 0 0 40px rgba(0,242,255,0.4);
+  transform: scaleX(1.04);
 }
 
 #combine-btn:active {
-  transform: scale(0.98);
+  transform: scaleX(0.98);
 }
 
 /* --- REACTION RESULT TERMINAL --- */
 .reaction-result {
   width: 100%;
   max-width: 600px;
-  background: rgba(0, 0, 0, 0.6);
-  border: 1px solid var(--glass-border);
-  border-left: 4px solid var(--neon-cyan);
-  border-radius: 0 8px 8px 0;
+  background: rgba(4, 13, 26, 0.97);
+  border: 1.5px solid rgba(0, 242, 255, 0.45);
+  box-shadow: 0 0 60px rgba(0, 242, 255, 0.18), inset 0 0 40px rgba(0, 242, 255, 0.04);
   padding: 25px;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-  font-family: 'Courier New', Courier, monospace; 
+  font-family: 'Roboto Mono', monospace;
   color: #e0f7ff;
   box-sizing: border-box;
-
-  /* === THE FIX: Force the box to stack and stretch === */
   display: flex;
   flex-direction: column;
   height: auto; 
+  position: relative;
 }
 
 .reaction-result h2 {
-  color: var(--neon-cyan);
+  font-family: 'Orbitron', monospace;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #00f2ff;
+  text-shadow: 0 0 14px rgba(0, 242, 255, 0.55);
+  letter-spacing: 2px;
+  border-bottom: 1px solid rgba(0, 242, 255, 0.2);
+  padding-bottom: 10px;
   margin-top: 0;
-  font-family: 'Orbitron', sans-serif;
-  letter-spacing: 1px;
+  text-transform: uppercase;
 }
 
 .reaction-result p {
   line-height: 1.6;
-  font-size: 1.1rem;
+  font-size: 1rem;
+  color: #a0c3d2;
 }
 
 /* Animations for the result text showing up */
@@ -308,7 +370,7 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
-  flex: 1; /* Ensures the container claims space inside the flex box */
+  flex: 1; 
 }
 
 .compound-structure-2d {
@@ -317,10 +379,6 @@ body {
   height: auto;
   max-height: 130px; 
   object-fit: contain; 
-  
-  /* === THE FIX: Removes phantom bottom spacing === */
-  display: flexbox; 
-  
   filter: invert(1) hue-rotate(180deg) brightness(1.5) drop-shadow(0 0 5px rgba(0, 242, 255, 0.5));
   transition: transform 0.3s ease;
 }
@@ -330,86 +388,28 @@ body {
 }
 
 /* =========================================
-   SELECTED ELEMENTS (IN THE DROP ZONE)
-========================================= */
-.selected-element {
-  width: 70px; /* Increased size */
-  height: 70px; /* Increased size */
-  border-radius: 50%; /* Makes it a perfect circle */
-  border: 2px solid var(--neon-cyan); /* Adds the circle outline */
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 2rem; /* Make the element symbol larger */
-  font-weight: bold;
-  background: rgba(0, 242, 255, 0.05); /* Slight inner glow */
-  box-shadow: 0 0 15px rgba(0, 242, 255, 0.2), inset 0 0 10px rgba(0, 242, 255, 0.1);
-  margin: 10px; /* Spacing between selected elements */
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.selected-element:hover {
-  background: rgba(255, 0, 106, 0.2); /* Changes color when hovering to remove */
-  border-color: #ff0055;
-  box-shadow: 0 0 15px rgba(255, 0, 85, 0.4);
-}
-
-/* =========================================
-   ELEMENT QUANTITY BADGE (UPDATED)
-========================================= */
-.element-badge {
-  position: absolute;
-  /* Push the badge slightly outside the new circular border */
-  top: -5px; 
-  right: -5px; 
-  background: var(--bg-dark);
-  color: var(--neon-magenta); 
-  border: 2px solid var(--neon-magenta); /* Slightly thicker border */
-  border-radius: 50%;
-  width: 28px; /* Slightly larger badge */
-  height: 28px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.9rem;
-  font-weight: bold;
-  font-family: 'Orbitron', sans-serif;
-  box-shadow: 0 0 8px rgba(255, 0, 255, 0.6); 
-  z-index: 10;
-  pointer-events: none; 
-}
-
-
-/* =========================================
-   MOBILE RESPONSIVENESS (ExMode.css)
+   MOBILE RESPONSIVENESS
 ========================================= */
 @media screen and (max-width: 768px) {
   .top-bar {
     flex-direction: column;
+    height: auto;
     gap: 15px;
     text-align: center;
     padding: 15px;
   }
 
-  h1 {
-    font-size: 1.2rem;
-  }
-
-  /* Switch from side-by-side to stacked */
   .experiment-ui {
     flex-direction: column;
     height: auto;
     min-height: 100vh;
   }
 
-  /* Turn the element list into a horizontal scrolling row on mobile */
   .elements-panel {
     width: 100%;
     border-right: none;
-    border-bottom: 1px solid var(--glass-border);
+    border-bottom: 1px solid rgba(0, 242, 255, 0.2);
     padding: 15px;
-    /* Limit height so the drop zone remains visible */
     max-height: 35vh; 
     overflow-y: auto;
   }
